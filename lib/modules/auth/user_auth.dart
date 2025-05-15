@@ -1,3 +1,4 @@
+import 'package:crb_mobile/modules/dashboard/credit_dashboard.dart';
 import 'package:flutter/material.dart';
 
 class UserAuth extends StatelessWidget {
@@ -104,7 +105,14 @@ class UserAuth extends StatelessWidget {
                                 color: Colors.transparent,
                                 child: InkWell(
                                   onTap: () {
-                                    // Handle login logic
+                                    Navigator.pushReplacement(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder:
+                                            (context) =>
+                                                const CreditDashboard(),
+                                      ),
+                                    );
                                   },
                                   borderRadius: BorderRadius.circular(12),
                                   child: Ink(
