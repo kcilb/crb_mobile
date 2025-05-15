@@ -71,13 +71,13 @@ class UserAuth extends StatelessWidget {
                         padding: const EdgeInsets.all(24.0),
                         child: Column(
                           children: [
-                            _buildTextField(
+                            const CustomTextField(
                               label: 'Email Address',
                               icon: Icons.email_outlined,
                               keyboardType: TextInputType.emailAddress,
                             ),
                             const SizedBox(height: 20),
-                            _buildTextField(
+                            CustomTextField(
                               label: 'Password',
                               icon: Icons.lock_outline,
                               isPassword: true,
@@ -98,25 +98,41 @@ class UserAuth extends StatelessWidget {
                             const SizedBox(height: 32),
                             SizedBox(
                               width: double.infinity,
-                              child: ElevatedButton(
-                                onPressed: () {
-                                  // Handle login logic
-                                },
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: Colors.blue[700],
-                                  padding: const EdgeInsets.symmetric(
-                                    vertical: 16,
-                                  ),
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(12),
-                                  ),
-                                ),
-                                child: const Text(
-                                  'Login',
-                                  style: TextStyle(
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.w600,
-                                    letterSpacing: 0.5,
+                              child: Material(
+                                elevation: 6,
+                                borderRadius: BorderRadius.circular(12),
+                                color: Colors.transparent,
+                                child: InkWell(
+                                  onTap: () {
+                                    // Handle login logic
+                                  },
+                                  borderRadius: BorderRadius.circular(12),
+                                  child: Ink(
+                                    decoration: BoxDecoration(
+                                      borderRadius: BorderRadius.circular(12),
+                                      gradient: const LinearGradient(
+                                        colors: [
+                                          Color.fromARGB(255, 8, 82, 155),
+                                          Color(0xFF42A5F5),
+                                        ],
+                                        begin: Alignment.topRight,
+                                        end: Alignment.bottomLeft,
+                                      ),
+                                    ),
+                                    padding: const EdgeInsets.symmetric(
+                                      vertical: 13,
+                                    ),
+                                    child: const Center(
+                                      child: Text(
+                                        'Login',
+                                        style: TextStyle(
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.w600,
+                                          color: Colors.white,
+                                          letterSpacing: 0.5,
+                                        ),
+                                      ),
+                                    ),
                                   ),
                                 ),
                               ),
@@ -159,7 +175,7 @@ class UserAuth extends StatelessWidget {
                                 color: Colors.blue,
                                 fontWeight: FontWeight.w600,
                               ),
-                              recognizer: null, // Add tap recognizer if needed
+                              recognizer: null, // Add gesture recognizer here
                             ),
                           ],
                         ),
@@ -203,29 +219,73 @@ class UserAuth extends StatelessWidget {
       ),
     );
   }
+}
 
-  Widget _buildTextField({
-    required String label,
-    required IconData icon,
-    TextInputType keyboardType = TextInputType.text,
-    bool isPassword = false,
-    Widget? suffix,
-  }) {
+// Custom TextField with focus color logic
+class CustomTextField extends StatefulWidget {
+  final String label;
+  final IconData icon;
+  final TextInputType keyboardType;
+  final bool isPassword;
+  final Widget? suffix;
+
+  const CustomTextField({
+    super.key,
+    required this.label,
+    required this.icon,
+    this.keyboardType = TextInputType.text,
+    this.isPassword = false,
+    this.suffix,
+  });
+
+  @override
+  State<CustomTextField> createState() => _CustomTextFieldState();
+}
+
+class _CustomTextFieldState extends State<CustomTextField> {
+  late FocusNode _focusNode;
+  bool _isFocused = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _focusNode = FocusNode();
+    _focusNode.addListener(() {
+      setState(() {
+        _isFocused = _focusNode.hasFocus;
+      });
+    });
+  }
+
+  @override
+  void dispose() {
+    _focusNode.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
     return TextFormField(
-      obscureText: isPassword,
-      keyboardType: keyboardType,
+      focusNode: _focusNode,
+      obscureText: widget.isPassword,
+      keyboardType: widget.keyboardType,
       style: const TextStyle(fontSize: 16),
       decoration: InputDecoration(
-        labelText: label,
-        labelStyle: const TextStyle(
+        labelText: widget.label,
+        labelStyle: TextStyle(
           fontWeight: FontWeight.w500,
           fontSize: 14,
-          color: Colors.black54,
+          color: _isFocused ? Colors.blue : Colors.black54,
         ),
         filled: true,
-        fillColor: Colors.white.withOpacity(0.95),
-        prefixIcon: Icon(icon, size: 20, color: Colors.black54),
-        suffixIcon: suffix,
+        fillColor:
+            _isFocused ? Colors.blue.shade50 : Colors.white.withOpacity(0.95),
+        prefixIcon: Icon(
+          widget.icon,
+          size: 20,
+          color: _isFocused ? Colors.blue : Colors.black54,
+        ),
+        suffixIcon: widget.suffix,
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(6),
           borderSide: const BorderSide(color: Colors.grey),
@@ -239,8 +299,8 @@ class UserAuth extends StatelessWidget {
           borderSide: const BorderSide(color: Colors.blue, width: 1.5),
         ),
         contentPadding: const EdgeInsets.symmetric(
-          horizontal: 16,
-          vertical: 14,
+          horizontal: 20,
+          vertical: 20, // Increased vertical padding for taller field
         ),
       ),
     );
