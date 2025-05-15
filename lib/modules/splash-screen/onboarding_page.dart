@@ -17,7 +17,7 @@ class _OnboardingPageState extends State<OnboardingPage> {
   void _nextPage() {
     if (_currentPage < 2) {
       _pageController.nextPage(
-        duration: const Duration(milliseconds: 300),
+        duration: const Duration(milliseconds: 500),
         curve: Curves.easeInOut,
       );
     } else {
@@ -32,55 +32,65 @@ class _OnboardingPageState extends State<OnboardingPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Stack(
-        children: [
-          PageView(
-            controller: _pageController,
-            onPageChanged: (index) {
-              setState(() {
-                _currentPage = index;
-              });
-            },
-            children: [
-              OnboardingScreen1(onSkip: _skipToEnd, onNext: _nextPage),
-              OnboardingScreen2(onSkip: _skipToEnd, onNext: _nextPage),
-              OnboardingScreen3(onGetStarted: _nextPage),
-            ],
-          ),
-          Positioned(
-            top: 60,
-            right: 24,
-            child: TextButton(
-              onPressed: _skipToEnd,
-              child: const Text(
-                'Skip',
-                style: TextStyle(fontSize: 16, color: Colors.grey),
+      backgroundColor: Colors.white,
+      body: SafeArea(
+        child: Stack(
+          children: [
+            PageView(
+              controller: _pageController,
+              onPageChanged: (index) {
+                setState(() {
+                  _currentPage = index;
+                });
+              },
+              children: [
+                OnboardingScreen1(onSkip: _skipToEnd, onNext: _nextPage),
+                OnboardingScreen2(onSkip: _skipToEnd, onNext: _nextPage),
+                OnboardingScreen3(onGetStarted: _nextPage),
+              ],
+            ),
+            Positioned(
+              top: 16,
+              right: 16,
+              child:
+                  _currentPage < 2
+                      ? TextButton(
+                        onPressed: _skipToEnd,
+                        child: Text(
+                          'Skip',
+                          style: TextStyle(
+                            color: Colors.grey[600],
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      )
+                      : const SizedBox.shrink(),
+            ),
+            Positioned(
+              bottom: 32,
+              left: 0,
+              right: 0,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: List.generate(3, (index) {
+                  return AnimatedContainer(
+                    duration: const Duration(milliseconds: 300),
+                    margin: const EdgeInsets.symmetric(horizontal: 4),
+                    width: _currentPage == index ? 24 : 8,
+                    height: 8,
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(4),
+                      color:
+                          _currentPage == index
+                              ? Colors.blue[800]
+                              : Colors.grey[300],
+                    ),
+                  );
+                }),
               ),
             ),
-          ),
-          Positioned(
-            bottom: 40,
-            left: 0,
-            right: 0,
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: List.generate(3, (index) {
-                return Container(
-                  margin: const EdgeInsets.symmetric(horizontal: 4),
-                  width: 8,
-                  height: 8,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    color:
-                        _currentPage == index
-                            ? Colors.blue
-                            : Colors.grey.withOpacity(0.4),
-                  ),
-                );
-              }),
-            ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
