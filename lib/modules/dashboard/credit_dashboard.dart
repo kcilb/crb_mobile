@@ -23,13 +23,16 @@ class _CreditDashboardState extends State<CreditDashboard> {
 
   List<String> getLoanSuggestions() {
     if (creditScore >= 800) {
-      return ["Home Loan up to 500,000", "Premium Car Loan up to \$100,000"];
+      return [
+        "Home Loan up to \Ugx500,000",
+        "Premium Car Loan up to \Ugx100,000",
+      ];
     } else if (creditScore >= 740) {
-      return ["Car Loan up to 50,000", "Personal Loan up to \$25,000"];
+      return ["Car Loan up to \Ugx50,000", "Personal Loan up to \Ugx25,000"];
     } else if (creditScore >= 670) {
-      return ["Personal Loan up to 10,000"];
+      return ["Personal Loan up to \Ugx10,000"];
     } else {
-      return ["Micro Loan up to 1,000"];
+      return ["Micro Loan up to \Ugx1,000"];
     }
   }
 
@@ -71,28 +74,39 @@ class _CreditDashboardState extends State<CreditDashboard> {
       ),
       body: Stack(
         children: [
-          // Background with gradient overlay
-          Container(
-            decoration: const BoxDecoration(
-              image: DecorationImage(
-                image: AssetImage('assets/images/background.jpg'),
-                fit: BoxFit.cover,
+          // Curved Background Section
+          Column(
+            children: [
+              Container(
+                height: MediaQuery.of(context).size.height * 0.43,
+                decoration: const BoxDecoration(
+                  image: DecorationImage(
+                    image: AssetImage('assets/images/background.jpg'),
+                    fit: BoxFit.cover,
+                  ),
+                ),
+                child: ClipPath(
+                  clipper: BottomCurveClipper(),
+                  child: Container(),
+                ),
               ),
-            ),
+              Expanded(child: Container(color: Colors.white)),
+            ],
           ),
 
-          // Main content
+          // Main Content
           SingleChildScrollView(
-            padding: const EdgeInsets.only(
-              top: 100,
+            padding: EdgeInsets.only(
+              top: MediaQuery.of(context).padding.top + kToolbarHeight,
               left: 16,
               right: 16,
               bottom: 16,
             ),
             child: Column(
               children: [
+                const SizedBox(height: 15),
                 _buildUserSummaryCard(context),
-                const SizedBox(height: 20),
+                const SizedBox(height: 15),
                 _buildCreditScoreCard(context),
                 const SizedBox(height: 20),
                 _buildCreditUtilizationCard(context),
@@ -109,79 +123,144 @@ class _CreditDashboardState extends State<CreditDashboard> {
     );
   }
 
-  Widget _buildPasswordRecordItem(String label, String value) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 4),
-      child: Row(
-        children: [
-          Text(
-            '$label:',
-            style: const TextStyle(color: Colors.white70, fontSize: 14),
+  Widget _buildUserSummaryCard(BuildContext context) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 20),
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
           ),
-          const SizedBox(width: 8),
-          Text(
-            value,
-            style: const TextStyle(color: Colors.white, fontSize: 14),
+        ],
+      ),
+      child: Column(
+        children: [
+          Row(
+            children: [
+              // Profile Avatar
+              Container(
+                width: 70,
+                height: 70,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  gradient: LinearGradient(
+                    colors: [
+                      Theme.of(context).colorScheme.primary,
+                      Theme.of(context).colorScheme.secondary,
+                    ],
+                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.1),
+                      blurRadius: 8,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
+                ),
+                child: const Icon(Icons.person, size: 36, color: Colors.white),
+              ),
+              const SizedBox(width: 16),
+
+              // User Info
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      userName,
+                      style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                        fontWeight: FontWeight.bold,
+                        color: Colors.black87,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      'Member since $memberSince',
+                      style: Theme.of(
+                        context,
+                      ).textTheme.bodyMedium?.copyWith(color: Colors.grey[600]),
+                    ),
+                    const SizedBox(height: 8),
+                    // Additional professional info
+                    Row(
+                      children: [
+                        _buildInfoChip(Icons.credit_score, 'Good Credit'),
+                        const SizedBox(width: 8),
+                        _buildInfoChip(Icons.verified_user, 'Verified'),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+
+              // View Profile Button
+              IconButton(
+                icon: Icon(
+                  Icons.arrow_forward_ios,
+                  size: 18,
+                  color: Theme.of(context).colorScheme.primary,
+                ),
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const ProfileScreen(),
+                    ),
+                  );
+                },
+              ),
+            ],
+          ),
+
+          // Divider with spacing
+          const Padding(
+            padding: EdgeInsets.symmetric(vertical: 12),
+            child: Divider(height: 1, color: Colors.black12),
+          ),
+
+          // Quick Stats Row
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            children: [
+              _buildStatItem('Credit Score', creditScore.toStringAsFixed(0)),
+              _buildStatItem('Available', '\Ugx$availableCredit'),
+              _buildStatItem('Limit', '\Ugx$totalCreditLimit'),
+            ],
           ),
         ],
       ),
     );
   }
 
-  Widget _buildUserSummaryCard(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(16.0),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.1),
-            blurRadius: 8,
-            offset: const Offset(0, 4),
+  Widget _buildInfoChip(IconData icon, String label) {
+    return Chip(
+      backgroundColor: Colors.grey[100],
+      avatar: Icon(icon, size: 16, color: Colors.blue),
+      label: Text(label, style: const TextStyle(fontSize: 12)),
+      visualDensity: VisualDensity.compact,
+      materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+    );
+  }
+
+  Widget _buildStatItem(String label, String value) {
+    return Column(
+      children: [
+        Text(
+          value,
+          style: const TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.bold,
+            color: Colors.black87,
           ),
-        ],
-      ),
-      child: Row(
-        children: [
-          Container(
-            width: 60,
-            height: 60,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              gradient: LinearGradient(
-                colors: [
-                  Theme.of(context).colorScheme.primary,
-                  Theme.of(context).colorScheme.secondary,
-                ],
-              ),
-            ),
-            child: const Icon(Icons.person, size: 30, color: Colors.white),
-          ),
-          const SizedBox(width: 16),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  userName,
-                  style: Theme.of(
-                    context,
-                  ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  'Member since $memberSince',
-                  style: Theme.of(
-                    context,
-                  ).textTheme.bodySmall?.copyWith(color: Colors.grey[600]),
-                ),
-              ],
-            ),
-          ),
-          Icon(Icons.arrow_forward_ios, size: 16, color: Colors.grey[400]),
-        ],
-      ),
+        ),
+        const SizedBox(height: 4),
+        Text(label, style: TextStyle(fontSize: 12, color: Colors.grey[600])),
+      ],
     );
   }
 
@@ -358,7 +437,7 @@ class _CreditDashboardState extends State<CreditDashboard> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        '\$$availableCredit',
+                        '\Ugx$availableCredit',
                         style: Theme.of(
                           context,
                         ).textTheme.headlineSmall?.copyWith(
@@ -381,7 +460,7 @@ class _CreditDashboardState extends State<CreditDashboard> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        '\$$totalCreditLimit',
+                        '\Ugx$totalCreditLimit',
                         style: Theme.of(context).textTheme.headlineSmall
                             ?.copyWith(fontWeight: FontWeight.bold),
                       ),
@@ -567,7 +646,7 @@ class _CreditDashboardState extends State<CreditDashboard> {
                   id: '1248',
                   institution: 'Equifax',
                   date: 'Oct 15, 2023',
-                  amount: '\$1,000',
+                  amount: '\Ugx1,000',
                 ),
                 const Divider(height: 24),
                 _buildInquiryItem(
@@ -575,7 +654,7 @@ class _CreditDashboardState extends State<CreditDashboard> {
                   id: '4568',
                   institution: 'TransUnion',
                   date: 'Sep 28, 2023',
-                  amount: '\$1,000',
+                  amount: '\Ugx1,000',
                 ),
               ],
             ),
@@ -659,4 +738,24 @@ class _CreditDashboardState extends State<CreditDashboard> {
       ),
     );
   }
+}
+
+class BottomCurveClipper extends CustomClipper<Path> {
+  @override
+  Path getClip(Size size) {
+    var path = Path();
+    path.lineTo(0, size.height - 30);
+    path.quadraticBezierTo(
+      size.width / 2,
+      size.height + 30,
+      size.width,
+      size.height - 30,
+    );
+    path.lineTo(size.width, 0);
+    path.close();
+    return path;
+  }
+
+  @override
+  bool shouldReclip(CustomClipper<Path> oldClipper) => false;
 }

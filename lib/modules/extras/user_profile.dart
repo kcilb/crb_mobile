@@ -41,74 +41,58 @@ class ProfileScreen extends StatelessWidget {
           ),
           const SizedBox(height: 24),
           const Divider(),
-          _buildPasswordOption(
+          _buildProfileOption(
             context,
-            color: Colors.pink.shade200,
-            title: 'Repeated Passwords',
-            subtitle: '1 out of 8 weblogins',
+            icon: Icons.edit,
+            title: 'Edit Profile',
             onTap: () {},
           ),
-          _buildPasswordOption(
+          _buildProfileOption(
             context,
-            color: Colors.blue.shade300,
-            title: 'Weak Passwords',
-            subtitle: '2 out of 6 weblogins',
+            icon: Icons.settings,
+            title: 'Settings',
             onTap: () {},
           ),
-          _buildPasswordOption(
+          _buildProfileOption(
             context,
-            color: Colors.orange.shade300,
-            title: 'Old Passwords',
-            subtitle: '4 out of 10 weblogins',
+            icon: Icons.help_outline,
+            title: 'Help & Support',
             onTap: () {},
+          ),
+          _buildProfileOption(
+            context,
+            icon: Icons.logout,
+            title: 'Logout',
+            onTap: () {
+              // Add logout functionality here
+              ScaffoldMessenger.of(
+                context,
+              ).showSnackBar(const SnackBar(content: Text("Logged out")));
+            },
+            color: Colors.red,
           ),
         ],
       ),
     );
   }
 
-  Widget _buildPasswordOption(
+  Widget _buildProfileOption(
     BuildContext context, {
-    required Color color,
+    required IconData icon,
     required String title,
-    required String subtitle,
     required VoidCallback onTap,
+    Color? color,
   }) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8.0),
-      child: Row(
-        children: [
-          CircleAvatar(
-            radius: 20,
-            backgroundColor: color.withOpacity(0.3),
-            child: Center(
-              child: Text(
-                title.substring(0, 1).toUpperCase(),
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ),
-          ),
-          const SizedBox(width: 16),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(title, style: Theme.of(context).textTheme.bodyLarge),
-                Text(
-                  subtitle,
-                  style: Theme.of(
-                    context,
-                  ).textTheme.bodySmall?.copyWith(color: Colors.grey),
-                ),
-              ],
-            ),
-          ),
-          TextButton(onPressed: onTap, child: const Text('Edit')),
-        ],
+    return ListTile(
+      leading: Icon(icon, color: color ?? Theme.of(context).iconTheme.color),
+      title: Text(
+        title,
+        style: TextStyle(
+          color: color ?? Theme.of(context).textTheme.bodyLarge?.color,
+        ),
       ),
+      trailing: const Icon(Icons.arrow_forward_ios, size: 16),
+      onTap: onTap,
     );
   }
 }
