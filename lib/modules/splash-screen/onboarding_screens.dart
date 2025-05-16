@@ -25,7 +25,6 @@ class OnboardingBase extends StatelessWidget {
     return Scaffold(
       body: Stack(
         children: [
-          // Background image
           Container(
             decoration: const BoxDecoration(
               image: DecorationImage(
@@ -35,7 +34,6 @@ class OnboardingBase extends StatelessWidget {
             ),
           ),
 
-          // Bottom gradient overlay
           Positioned.fill(
             child: Container(
               decoration: const BoxDecoration(
