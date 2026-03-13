@@ -1409,7 +1409,7 @@ class _CreditDashboardState extends State<CreditDashboard> {
     return SafeArea(
       top: false,
       child: Padding(
-        padding: const EdgeInsets.fromLTRB(16, 4, 16, 8),
+        padding: const EdgeInsets.fromLTRB(16, 6, 16, 12),
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 300),
           curve: Curves.easeOutCubic,
@@ -1419,12 +1419,12 @@ class _CreditDashboardState extends State<CreditDashboard> {
             boxShadow: [
               BoxShadow(
                 color: Colors.black.withOpacity(0.07),
-                blurRadius: 18,
+                blurRadius: 20,
                 offset: const Offset(0, -4),
               ),
             ],
           ),
-          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
