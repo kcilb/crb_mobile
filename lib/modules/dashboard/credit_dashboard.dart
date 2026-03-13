@@ -1,5 +1,6 @@
 import 'package:crb_mobile/modules/extras/notification_screen.dart';
 import 'package:crb_mobile/modules/extras/user_profile.dart';
+import 'package:crb_mobile/modules/extras/common_action_screens.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -19,6 +20,8 @@ class _CreditDashboardState extends State<CreditDashboard> {
   final double totalCreditLimit = 1000.0;
   final int activeLoansCount = 10;
   final int closedLoansCount = 0;
+
+  int _selectedNavIndex = 0;
 
   bool isEligibleForLoan() {
     return creditScore >= 670 && (availableCredit / totalCreditLimit) >= 0.3;
@@ -41,14 +44,15 @@ class _CreditDashboardState extends State<CreditDashboard> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
     return Scaffold(
+      backgroundColor: const Color(0xFFF6F7FB),
       extendBodyBehindAppBar: true,
       appBar: AppBar(
-        title: const Text(
-          'Credit Dashboard',
-          style: TextStyle(color: Colors.white),
-        ),
-        centerTitle: true,
+        title: const Text('Dashboard', style: TextStyle(color: Colors.white)),
+        centerTitle: false,
         backgroundColor: Colors.transparent,
         elevation: 0,
         iconTheme: const IconThemeData(color: Colors.white),
@@ -93,8 +97,22 @@ class _CreditDashboardState extends State<CreditDashboard> {
                   child: Container(),
                 ),
               ),
-              Expanded(child: Container(color: Colors.white)),
+              const Expanded(child: SizedBox()),
             ],
+          ),
+          // Contrast overlay for legibility
+          Container(
+            height: MediaQuery.of(context).size.height * 0.43,
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: [
+                  Colors.black.withOpacity(0.25),
+                  Colors.black.withOpacity(0.45),
+                ],
+              ),
+            ),
           ),
 
           // Main Content
@@ -106,16 +124,21 @@ class _CreditDashboardState extends State<CreditDashboard> {
               bottom: 16,
             ),
             child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                const SizedBox(height: 15),
+                const SizedBox(height: 10),
+                _buildHeaderStrip(context),
+                const SizedBox(height: 14),
                 _buildUserSummaryCard(context),
-                const SizedBox(height: 15),
+                const SizedBox(height: 12),
+                _buildQuickActionsSection(context),
+                const SizedBox(height: 12),
                 _buildCreditScoreCard(context),
-                const SizedBox(height: 15),
+                const SizedBox(height: 12),
                 _buildColorLoanCards(context),
-                const SizedBox(height: 15),
+                const SizedBox(height: 12),
                 _buildLoanEligibilityCard(context),
-                const SizedBox(height: 15),
+                const SizedBox(height: 12),
                 _buildRecentInquiriesSection(context),
               ],
             ),
@@ -126,13 +149,54 @@ class _CreditDashboardState extends State<CreditDashboard> {
     );
   }
 
+  Widget _buildHeaderStrip(BuildContext context) {
+    final firstName = userName.split(' ').first;
+    return Row(
+      children: [
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Hi, $firstName',
+                style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                      color: Colors.white,
+                      fontWeight: FontWeight.w800,
+                      letterSpacing: 0.2,
+                    ),
+              ),
+              const SizedBox(height: 2),
+              const Text(
+                'Here’s a quick overview of your credit',
+                style: TextStyle(color: Colors.white70, fontSize: 13),
+              ),
+            ],
+          ),
+        ),
+        Container(
+          decoration: BoxDecoration(
+            color: Colors.white.withOpacity(0.18),
+            borderRadius: BorderRadius.circular(14),
+            border: Border.all(color: Colors.white24),
+          ),
+          child: IconButton(
+            tooltip: 'Search',
+            onPressed: () {
+              HapticFeedback.selectionClick();
+            },
+            icon: const Icon(Icons.search_rounded, color: Colors.white),
+          ),
+        ),
+      ],
+    );
+  }
+
   Widget _buildUserSummaryCard(BuildContext context) {
     return Container(
-      margin: const EdgeInsets.only(bottom: 20),
-      padding: const EdgeInsets.all(20),
+      padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withOpacity(0.05),
@@ -198,7 +262,9 @@ class _CreditDashboardState extends State<CreditDashboard> {
                     // Additional professional info
                     Row(
                       children: [
-                        _buildInfoChip(Icons.credit_score, 'Good Credit'),
+                        _buildInfoChip(Icons.verified_rounded, 'Verified'),
+                        const SizedBox(width: 8),
+                        _buildInfoChip(Icons.credit_score, 'Good credit'),
                       ],
                     ),
                   ],
@@ -251,6 +317,152 @@ class _CreditDashboardState extends State<CreditDashboard> {
       label: Text(label, style: const TextStyle(fontSize: 12)),
       visualDensity: VisualDensity.compact,
       materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+    );
+  }
+
+  Widget _buildQuickActionsSection(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Text(
+                'Quick actions',
+                style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                      fontWeight: FontWeight.w800,
+                    ),
+              ),
+              const Spacer(),
+              Text(
+                'Most used',
+                style: Theme.of(context)
+                    .textTheme
+                    .bodySmall
+                    ?.copyWith(color: Colors.grey[600]),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          Row(
+            children: [
+              Expanded(
+                child: _QuickActionTile(
+                  icon: Icons.receipt_long_rounded,
+                  label: 'Credit report',
+                  tint: colorScheme.primary,
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const CreditReportScreen(),
+                      ),
+                    );
+                  },
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: _QuickActionTile(
+                  icon: Icons.payments_rounded,
+                  label: 'Make payment',
+                  tint: const Color(0xFF16A34A),
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const PaymentsScreen(),
+                      ),
+                    );
+                  },
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: _QuickActionTile(
+                  icon: Icons.support_agent_rounded,
+                  label: 'Support',
+                  tint: const Color(0xFF7C3AED),
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const SupportScreen(),
+                      ),
+                    );
+                  },
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          Row(
+            children: [
+              Expanded(
+                child: _QuickActionTile(
+                  icon: Icons.add_card_rounded,
+                  label: 'Request loan',
+                  tint: const Color(0xFF0284C7),
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const RequestLoanScreen(),
+                      ),
+                    );
+                  },
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: _QuickActionTile(
+                  icon: Icons.history_rounded,
+                  label: 'History',
+                  tint: const Color(0xFF0F172A),
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const HistoryScreen(),
+                      ),
+                    );
+                  },
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: _QuickActionTile(
+                  icon: Icons.notifications_active_rounded,
+                  label: 'Alerts',
+                  tint: const Color(0xFFDC2626),
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const NotificationScreen(),
+                      ),
+                    );
+                  },
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
     );
   }
 
@@ -821,15 +1033,15 @@ class _CreditDashboardState extends State<CreditDashboard> {
             padding: const EdgeInsets.all(16.0),
             child: Column(
               children: [
-                _buildInquiryItem(
+                _buildInquiryTile(
                   context,
                   id: '1248',
                   institution: 'Equifax',
                   date: 'Oct 15, 2023',
                   amount: '\Ugx1,000',
                 ),
-                const Divider(height: 24),
-                _buildInquiryItem(
+                const Divider(height: 12),
+                _buildInquiryTile(
                   context,
                   id: '4568',
                   institution: 'TransUnion',
@@ -844,77 +1056,160 @@ class _CreditDashboardState extends State<CreditDashboard> {
     );
   }
 
-  Widget _buildInquiryItem(
+  Widget _buildInquiryTile(
     BuildContext context, {
     required String id,
     required String institution,
     required String date,
     required String amount,
   }) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              institution,
-              style: Theme.of(
-                context,
-              ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 4),
-            Text(
-              'ID: $id • $date',
-              style: Theme.of(
-                context,
-              ).textTheme.bodySmall?.copyWith(color: Colors.grey[600]),
-            ),
-          ],
+    final colorScheme = Theme.of(context).colorScheme;
+
+    return ListTile(
+      contentPadding: EdgeInsets.zero,
+      leading: Container(
+        height: 42,
+        width: 42,
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(14),
+          color: colorScheme.primary.withOpacity(0.10),
         ),
-        Container(
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-          decoration: BoxDecoration(
-            color: Theme.of(context).colorScheme.primary.withOpacity(0.1),
-            borderRadius: BorderRadius.circular(12),
-          ),
-          child: Text(
-            amount,
-            style: TextStyle(
-              color: Theme.of(context).colorScheme.primary,
-              fontWeight: FontWeight.bold,
-            ),
+        child: Icon(Icons.search_rounded, color: colorScheme.primary),
+      ),
+      title: Text(
+        institution,
+        style: Theme.of(context)
+            .textTheme
+            .titleMedium
+            ?.copyWith(fontWeight: FontWeight.w800),
+      ),
+      subtitle: Text(
+        'ID $id • $date',
+        style:
+            Theme.of(context).textTheme.bodySmall?.copyWith(color: Colors.grey),
+      ),
+      trailing: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+        decoration: BoxDecoration(
+          color: colorScheme.primary.withOpacity(0.10),
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Text(
+          amount,
+          style: TextStyle(
+            color: colorScheme.primary,
+            fontWeight: FontWeight.w800,
           ),
         ),
-      ],
+      ),
+      onTap: () => HapticFeedback.selectionClick(),
     );
   }
 
   Widget _buildBottomNavBar(BuildContext context) {
-    return ClipRRect(
-      borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
-      child: BottomNavigationBar(
-        currentIndex: 0,
-        selectedItemColor: Theme.of(context).colorScheme.primary,
-        unselectedItemColor: Colors.grey,
-        backgroundColor: Colors.white,
-        elevation: 8,
-        type: BottomNavigationBarType.fixed,
-        items: const [
-          BottomNavigationBarItem(
-            icon: Icon(Icons.dashboard),
-            label: 'Dashboard',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.search_sharp),
-            label: 'Credit Inquries',
-          ),
-          BottomNavigationBarItem(icon: Icon(Icons.history), label: 'History'),
-          BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Profile'),
-        ],
-        onTap: (index) {
-          // Handle navigation
-        },
+    final colorScheme = Theme.of(context).colorScheme;
+
+    return NavigationBar(
+      selectedIndex: _selectedNavIndex,
+      backgroundColor: Colors.white,
+      indicatorColor: colorScheme.primary.withOpacity(0.14),
+      onDestinationSelected: (index) {
+        setState(() => _selectedNavIndex = index);
+        HapticFeedback.selectionClick();
+
+        if (index == 1) {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => const InquiriesScreen()),
+          );
+        }
+        if (index == 2) {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => const HistoryScreen()),
+          );
+        }
+        if (index == 3) {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => const ProfileScreen()),
+          );
+        }
+      },
+      destinations: const [
+        NavigationDestination(
+          icon: Icon(Icons.dashboard_outlined),
+          selectedIcon: Icon(Icons.dashboard_rounded),
+          label: 'Dashboard',
+        ),
+        NavigationDestination(
+          icon: Icon(Icons.search_rounded),
+          selectedIcon: Icon(Icons.search),
+          label: 'Inquiries',
+        ),
+        NavigationDestination(
+          icon: Icon(Icons.history_rounded),
+          label: 'History',
+        ),
+        NavigationDestination(
+          icon: Icon(Icons.person_outline_rounded),
+          selectedIcon: Icon(Icons.person_rounded),
+          label: 'Profile',
+        ),
+      ],
+    );
+  }
+}
+
+class _QuickActionTile extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final Color tint;
+  final VoidCallback onTap;
+
+  const _QuickActionTile({
+    required this.icon,
+    required this.label,
+    required this.tint,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      borderRadius: BorderRadius.circular(18),
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 12),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(18),
+          color: tint.withOpacity(0.08),
+          border: Border.all(color: tint.withOpacity(0.18)),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              height: 34,
+              width: 34,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: tint.withOpacity(0.14),
+              ),
+              child: Icon(icon, color: tint, size: 18),
+            ),
+            const SizedBox(height: 10),
+            Text(
+              label,
+              textAlign: TextAlign.center,
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+              style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                    fontWeight: FontWeight.w700,
+                  ),
+            ),
+          ],
+        ),
       ),
     );
   }
