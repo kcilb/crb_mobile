@@ -139,7 +139,7 @@ class SplashScreen extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: const [
                       _SplashFeatureRow(
-                        icon: Icons.shield_lock_rounded,
+                        icon: Icons.shield_moon_sharp,
                         label: 'Bank–grade security for your data',
                       ),
                       SizedBox(height: 10),
@@ -215,10 +215,7 @@ class _SplashFeatureRow extends StatelessWidget {
   final IconData icon;
   final String label;
 
-  const _SplashFeatureRow({
-    required this.icon,
-    required this.label,
-  });
+  const _SplashFeatureRow({required this.icon, required this.label});
 
   @override
   Widget build(BuildContext context) {
@@ -232,20 +229,13 @@ class _SplashFeatureRow extends StatelessWidget {
             shape: BoxShape.circle,
             color: Colors.white.withOpacity(0.08),
           ),
-          child: Icon(
-            icon,
-            size: 16,
-            color: Colors.white,
-          ),
+          child: Icon(icon, size: 16, color: Colors.white),
         ),
         const SizedBox(width: 10),
         Expanded(
           child: Text(
             label,
-            style: const TextStyle(
-              fontSize: 13,
-              color: Colors.white80,
-            ),
+            style: const TextStyle(fontSize: 13, color: Colors.white60),
           ),
         ),
       ],
