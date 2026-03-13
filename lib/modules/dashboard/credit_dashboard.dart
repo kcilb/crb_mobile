@@ -631,9 +631,10 @@ class _CreditDashboardState extends State<CreditDashboard> {
                                   decoration: BoxDecoration(
                                     shape: BoxShape.circle,
                                     border: Border.all(
+                                      width: 1.6,
                                       color: digit.isNotEmpty
                                           ? theme.colorScheme.primary
-                                          : Colors.grey.shade300,
+                                          : Colors.grey.shade500,
                                     ),
                                     color: digit.isNotEmpty
                                         ? theme.colorScheme.primary
