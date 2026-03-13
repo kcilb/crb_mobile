@@ -838,17 +838,19 @@ class _CreditDashboardState extends State<CreditDashboard> {
               builder: (context, constraints) {
                 final isNarrow = constraints.maxWidth < 340;
 
-                final scoreDetails = TweenAnimationBuilder<double>(
-                  tween: Tween(begin: 0, end: scorePercentage),
+                final scoreDetails = TweenAnimationBuilder<int>(
+                  tween: IntTween(
+                    begin: 0,
+                    end: creditScore.toInt(),
+                  ),
                   duration: const Duration(milliseconds: 900),
                   curve: Curves.easeOutCubic,
                   builder: (context, animatedValue, _) {
-                    final animatedScore = maxCreditScore * animatedValue;
                     return Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          animatedScore.toStringAsFixed(0),
+                          animatedValue.toString(),
                           style: Theme.of(context)
                               .textTheme
                               .headlineSmall
@@ -883,15 +885,22 @@ class _CreditDashboardState extends State<CreditDashboard> {
                               color: Colors.green[600],
                             ),
                             const SizedBox(width: 4),
-                            Text(
-                              '+12 pts last 30 days',
-                              style: Theme.of(context)
-                                  .textTheme
-                                  .bodySmall
-                                  ?.copyWith(
-                                    color: Colors.green[700],
-                                    fontWeight: FontWeight.w600,
-                                  ),
+                            TweenAnimationBuilder<int>(
+                              tween: IntTween(begin: 0, end: 12),
+                              duration: const Duration(milliseconds: 700),
+                              curve: Curves.easeOutCubic,
+                              builder: (context, trendValue, _) {
+                                return Text(
+                                  '+$trendValue pts last 30 days',
+                                  style: Theme.of(context)
+                                      .textTheme
+                                      .bodySmall
+                                      ?.copyWith(
+                                        color: Colors.green[700],
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                );
+                              },
                             ),
                           ],
                         ),
