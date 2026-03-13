@@ -579,19 +579,52 @@ class _CreditDashboardState extends State<CreditDashboard> {
           barrierDismissible: true,
           builder: (context) {
             return AlertDialog(
+              insetPadding:
+                  const EdgeInsets.symmetric(horizontal: 32, vertical: 24),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(20),
               ),
-              title: const Text('Enter code to view balances'),
-              content: TextField(
-                controller: controller,
-                keyboardType: TextInputType.number,
-                maxLength: 4,
-                obscureText: true,
-                decoration: const InputDecoration(
-                  counterText: '',
-                  hintText: '4-digit code',
-                ),
+              title: Row(
+                children: [
+                  Container(
+                    height: 32,
+                    width: 32,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: theme.colorScheme.primary.withOpacity(0.08),
+                    ),
+                    child: Icon(
+                      Icons.lock_outline_rounded,
+                      size: 18,
+                      color: theme.colorScheme.primary,
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  const Text('View balances'),
+                ],
+              ),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Enter your 4‑digit code to reveal available and limit amounts on this device.',
+                    style: theme.textTheme.bodySmall
+                        ?.copyWith(color: Colors.grey[700]),
+                  ),
+                  const SizedBox(height: 12),
+                  TextField(
+                    controller: controller,
+                    keyboardType: TextInputType.number,
+                    maxLength: 4,
+                    obscureText: true,
+                    decoration: const InputDecoration(
+                      counterText: '',
+                      labelText: 'Security code',
+                      hintText: '••••',
+                    ),
+                  ),
+                ],
               ),
               actions: [
                 TextButton(
