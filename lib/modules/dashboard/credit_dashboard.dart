@@ -561,7 +561,7 @@ class _CreditDashboardState extends State<CreditDashboard> {
       elevation: 4,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       child: Padding(
-        padding: const EdgeInsets.all(20.0),
+        padding: const EdgeInsets.all(16.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -594,44 +594,53 @@ class _CreditDashboardState extends State<CreditDashboard> {
                 ),
               ],
             ),
-            const SizedBox(height: 20),
+            const SizedBox(height: 16),
             Center(
-              child: Stack(
-                alignment: Alignment.center,
-                children: [
-                  SizedBox(
-                    width: 200,
-                    height: 200,
-                    child: CircularProgressIndicator(
-                      value: scorePercentage,
-                      strokeWidth: 12,
-                      backgroundColor: Colors.grey[200],
-                      valueColor: AlwaysStoppedAnimation<Color>(scoreColor),
-                    ),
-                  ),
-                  Column(
+              child: TweenAnimationBuilder<double>(
+                tween: Tween(begin: 0, end: scorePercentage),
+                duration: const Duration(milliseconds: 900),
+                curve: Curves.easeOutCubic,
+                builder: (context, animatedValue, _) {
+                  return Stack(
+                    alignment: Alignment.center,
                     children: [
-                      Text(
-                        creditScore.toStringAsFixed(0),
-                        style: Theme.of(
-                          context,
-                        ).textTheme.headlineLarge?.copyWith(
-                          fontWeight: FontWeight.bold,
-                          color: Theme.of(context).colorScheme.primary,
+                      SizedBox(
+                        width: 160,
+                        height: 160,
+                        child: CircularProgressIndicator(
+                          value: animatedValue,
+                          strokeWidth: 10,
+                          backgroundColor: Colors.grey[200],
+                          valueColor: AlwaysStoppedAnimation<Color>(scoreColor),
                         ),
                       ),
-                      Text(
-                        'out of ${maxCreditScore.toInt()}',
-                        style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                          color: Colors.grey[600],
-                        ),
+                      Column(
+                        children: [
+                          Text(
+                            creditScore.toStringAsFixed(0),
+                            style: Theme.of(
+                              context,
+                            ).textTheme.headlineSmall?.copyWith(
+                                  fontWeight: FontWeight.bold,
+                                  color: Theme.of(context).colorScheme.primary,
+                                  fontSize: 28,
+                                ),
+                          ),
+                          Text(
+                            'out of ${maxCreditScore.toInt()}',
+                            style: Theme.of(context)
+                                .textTheme
+                                .titleSmall
+                                ?.copyWith(color: Colors.grey[600]),
+                          ),
+                        ],
                       ),
                     ],
-                  ),
-                ],
+                  );
+                },
               ),
             ),
-            const SizedBox(height: 20),
+            const SizedBox(height: 16),
             _buildScoreRangeIndicator(context),
           ],
         ),
@@ -640,6 +649,8 @@ class _CreditDashboardState extends State<CreditDashboard> {
   }
 
   Widget _buildScoreRangeIndicator(BuildContext context) {
+    final targetValue = creditScore / maxCreditScore;
+
     return Column(
       children: [
         Row(
@@ -653,14 +664,21 @@ class _CreditDashboardState extends State<CreditDashboard> {
           ],
         ),
         const SizedBox(height: 12),
-        LinearProgressIndicator(
-          value: creditScore / maxCreditScore,
-          backgroundColor: Colors.grey[200],
-          valueColor: AlwaysStoppedAnimation<Color>(
-            Theme.of(context).colorScheme.primary,
-          ),
-          minHeight: 6,
-          borderRadius: BorderRadius.circular(3),
+        TweenAnimationBuilder<double>(
+          tween: Tween(begin: 0, end: targetValue),
+          duration: const Duration(milliseconds: 900),
+          curve: Curves.easeOutCubic,
+          builder: (context, animatedValue, _) {
+            return LinearProgressIndicator(
+              value: animatedValue,
+              backgroundColor: Colors.grey[200],
+              valueColor: AlwaysStoppedAnimation<Color>(
+                Theme.of(context).colorScheme.primary,
+              ),
+              minHeight: 6,
+              borderRadius: BorderRadius.circular(3),
+            );
+          },
         ),
       ],
     );
