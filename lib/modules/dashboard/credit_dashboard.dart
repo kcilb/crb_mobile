@@ -22,6 +22,7 @@ class _CreditDashboardState extends State<CreditDashboard> {
   final int closedLoansCount = 0;
 
   bool _summaryVisible = false;
+  bool _showBalances = false;
 
   @override
   void initState() {
@@ -357,17 +358,42 @@ class _CreditDashboardState extends State<CreditDashboard> {
                 child: Divider(height: 1, color: Colors.black12),
               ),
 
-              // Quick Stats Row
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceAround,
-                children: [
-                  _buildStatItem(
-                    'Credit Score',
-                    creditScore.toStringAsFixed(0),
-                  ),
-                  _buildStatItem('Available', '\Ugx$availableCredit'),
-                  _buildStatItem('Limit', '\Ugx$totalCreditLimit'),
-                ],
+              // Quick Stats Row with balance protection
+              InkWell(
+                borderRadius: BorderRadius.circular(16),
+                onTap: _showBalances ? null : () => _promptBalanceCode(context),
+                child: Column(
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceAround,
+                      children: [
+                        _buildStatItem(
+                          'Credit Score',
+                          creditScore.toStringAsFixed(0),
+                        ),
+                        _buildStatItem(
+                          'Available',
+                          '\Ugx$availableCredit',
+                          obscure: !_showBalances,
+                        ),
+                        _buildStatItem(
+                          'Limit',
+                          '\Ugx$totalCreditLimit',
+                          obscure: !_showBalances,
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 6),
+                    if (!_showBalances)
+                      Text(
+                        'Tap to enter code and view balances',
+                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                              color: Colors.grey[600],
+                              fontSize: 11,
+                            ),
+                      ),
+                  ],
+                ),
               ),
             ],
           ),
@@ -518,11 +544,11 @@ class _CreditDashboardState extends State<CreditDashboard> {
     );
   }
 
-  Widget _buildStatItem(String label, String value) {
+  Widget _buildStatItem(String label, String value, {bool obscure = false}) {
     return Column(
       children: [
         Text(
-          value,
+          obscure ? '••••' : value,
           style: const TextStyle(
             fontSize: 16,
             fontWeight: FontWeight.bold,
@@ -533,6 +559,68 @@ class _CreditDashboardState extends State<CreditDashboard> {
         Text(label, style: TextStyle(fontSize: 12, color: Colors.grey[600])),
       ],
     );
+  }
+
+  Future<void> _promptBalanceCode(BuildContext context) async {
+    final controller = TextEditingController();
+    final theme = Theme.of(context);
+
+    final success = await showDialog<bool>(
+          context: context,
+          barrierDismissible: true,
+          builder: (context) {
+            return AlertDialog(
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(20),
+              ),
+              title: const Text('Enter code to view balances'),
+              content: TextField(
+                controller: controller,
+                keyboardType: TextInputType.number,
+                maxLength: 4,
+                obscureText: true,
+                decoration: const InputDecoration(
+                  counterText: '',
+                  hintText: '4-digit code',
+                ),
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.of(context).pop(false),
+                  child: const Text('Cancel'),
+                ),
+                FilledButton(
+                  onPressed: () {
+                    // Demo: accept 1234 as the correct code
+                    if (controller.text == '1234') {
+                      Navigator.of(context).pop(true);
+                    } else {
+                      Navigator.of(context).pop(false);
+                    }
+                  },
+                  child: const Text('Confirm'),
+                ),
+              ],
+            );
+          },
+        ) ??
+        false;
+
+    if (!mounted) return;
+
+    if (success) {
+      setState(() {
+        _showBalances = true;
+      });
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: const Text('Incorrect code'),
+          backgroundColor: theme.colorScheme.error,
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+    }
   }
 
   Widget _buildCreditScoreCard(BuildContext context) {
