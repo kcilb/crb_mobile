@@ -21,6 +21,21 @@ class _CreditDashboardState extends State<CreditDashboard> {
   final int activeLoansCount = 10;
   final int closedLoansCount = 0;
 
+  bool _summaryVisible = false;
+
+  @override
+  void initState() {
+    super.initState();
+    // Trigger entry animation after first frame
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        setState(() {
+          _summaryVisible = true;
+        });
+      }
+    });
+  }
+
   int _selectedNavIndex = 0;
 
   bool isEligibleForLoan() {
@@ -204,120 +219,165 @@ class _CreditDashboardState extends State<CreditDashboard> {
   }
 
   Widget _buildUserSummaryCard(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(18),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(20),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      child: Column(
-        children: [
-          Row(
-            children: [
-              Container(
-                width: 70,
-                height: 70,
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(12),
-                  color: Colors.grey[200],
-                  image: const DecorationImage(
-                    image: AssetImage('assets/images/default_photo.png'),
-                    fit: BoxFit.cover,
-                  ),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.1),
-                      blurRadius: 8,
-                      offset: const Offset(0, 4),
-                    ),
-                  ],
-                ),
-                child: Image.asset(
-                  'assets/images/default_photo.png',
-                  errorBuilder:
-                      (context, error, stackTrace) => const Icon(
-                        Icons.person,
-                        size: 36,
-                        color: Colors.grey,
-                      ),
-                ),
+    return AnimatedOpacity(
+      duration: const Duration(milliseconds: 500),
+      curve: Curves.easeOut,
+      opacity: _summaryVisible ? 1 : 0,
+      child: AnimatedSlide(
+        duration: const Duration(milliseconds: 500),
+        curve: Curves.easeOut,
+        offset: _summaryVisible ? Offset.zero : const Offset(0, 0.06),
+        child: Container(
+          padding: const EdgeInsets.all(18),
+          decoration: BoxDecoration(
+            gradient: const LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [
+                Color(0xFFFFFFFF),
+                Color(0xFFF4F7FF),
+              ],
+            ),
+            borderRadius: BorderRadius.circular(22),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.05),
+                blurRadius: 14,
+                offset: const Offset(0, 6),
               ),
-              const SizedBox(width: 16),
-
-              // User Info
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      userName,
-                      style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                        fontWeight: FontWeight.bold,
-                        color: Colors.black87,
+            ],
+          ),
+          child: Column(
+            children: [
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  TweenAnimationBuilder<double>(
+                    tween: Tween(begin: 0.9, end: 1.0),
+                    duration: const Duration(milliseconds: 600),
+                    curve: Curves.easeOutBack,
+                    builder: (context, scale, child) {
+                      return Transform.scale(
+                        scale: scale,
+                        child: child,
+                      );
+                    },
+                    child: Container(
+                      width: 72,
+                      height: 72,
+                      padding: const EdgeInsets.all(3),
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        gradient: LinearGradient(
+                          colors: [
+                            Theme.of(context).colorScheme.primary,
+                            Theme.of(context).colorScheme.secondary,
+                          ],
+                        ),
+                      ),
+                      child: Container(
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: Colors.grey[200],
+                          image: const DecorationImage(
+                            image: AssetImage('assets/images/default_photo.png'),
+                            fit: BoxFit.cover,
+                          ),
+                        ),
+                        clipBehavior: Clip.antiAlias,
+                        child: Image.asset(
+                          'assets/images/default_photo.png',
+                          fit: BoxFit.cover,
+                          errorBuilder: (
+                            context,
+                            error,
+                            stackTrace,
+                          ) =>
+                              const Icon(
+                                Icons.person,
+                                size: 32,
+                                color: Colors.grey,
+                              ),
+                        ),
                       ),
                     ),
-                    const SizedBox(height: 4),
-                    Text(
-                      'Member since $memberSince',
-                      style: Theme.of(
-                        context,
-                      ).textTheme.bodyMedium?.copyWith(color: Colors.grey[600]),
-                    ),
-                    const SizedBox(height: 8),
-                    // Additional professional info
-                    Row(
+                  ),
+                  const SizedBox(width: 16),
+
+                  // User Info
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        _buildInfoChip(Icons.verified_rounded, 'Verified'),
-                        const SizedBox(width: 8),
-                        _buildInfoChip(Icons.credit_score, 'Good credit'),
+                        Text(
+                          userName,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style:
+                              Theme.of(context).textTheme.titleLarge?.copyWith(
+                                    fontWeight: FontWeight.w800,
+                                    color: Colors.black87,
+                                  ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          'Member since $memberSince',
+                          style: Theme.of(context)
+                              .textTheme
+                              .bodyMedium
+                              ?.copyWith(color: Colors.grey[600]),
+                        ),
+                        const SizedBox(height: 8),
+                        // Additional professional info
+                        Wrap(
+                          spacing: 8,
+                          runSpacing: -4,
+                          children: [
+                            _buildInfoChip(Icons.verified_rounded, 'Verified'),
+                            _buildInfoChip(Icons.credit_score, 'Good credit'),
+                          ],
+                        ),
                       ],
                     ),
-                  ],
-                ),
-              ),
+                  ),
 
-              // View Profile Button
-              IconButton(
-                icon: Icon(
-                  Icons.arrow_forward_ios,
-                  size: 18,
-                  color: Theme.of(context).colorScheme.primary,
-                ),
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => const ProfileScreen(),
+                  // View Profile Button
+                  IconButton(
+                    icon: Icon(
+                      Icons.arrow_forward_ios,
+                      size: 18,
+                      color: Theme.of(context).colorScheme.primary,
                     ),
-                  );
-                },
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const ProfileScreen(),
+                        ),
+                      );
+                    },
+                  ),
+                ],
+              ),
+
+              // Divider with spacing
+              const Padding(
+                padding: EdgeInsets.symmetric(vertical: 12),
+                child: Divider(height: 1, color: Colors.black12),
+              ),
+
+              // Quick Stats Row
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceAround,
+                children: [
+                  _buildStatItem('Credit Score', creditScore.toStringAsFixed(0)),
+                  _buildStatItem('Available', '\Ugx$availableCredit'),
+                  _buildStatItem('Limit', '\Ugx$totalCreditLimit'),
+                ],
               ),
             ],
           ),
-
-          // Divider with spacing
-          const Padding(
-            padding: EdgeInsets.symmetric(vertical: 12),
-            child: Divider(height: 1, color: Colors.black12),
-          ),
-
-          // Quick Stats Row
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
-            children: [
-              _buildStatItem('Credit Score', creditScore.toStringAsFixed(0)),
-              _buildStatItem('Available', '\Ugx$availableCredit'),
-              _buildStatItem('Limit', '\Ugx$totalCreditLimit'),
-            ],
-          ),
-        ],
+        ),
       ),
     );
   }
