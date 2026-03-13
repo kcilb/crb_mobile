@@ -547,16 +547,25 @@ class _CreditDashboardState extends State<CreditDashboard> {
   Widget _buildStatItem(String label, String value, {bool obscure = false}) {
     return Column(
       children: [
-        Text(
-          obscure ? '••••' : value,
-          style: const TextStyle(
-            fontSize: 16,
-            fontWeight: FontWeight.bold,
-            color: Colors.black87,
-          ),
-        ),
+        obscure
+            ? Icon(
+                Icons.visibility_off_outlined,
+                size: 20,
+                color: Colors.grey[500],
+              )
+            : Text(
+                value,
+                style: const TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.black87,
+                ),
+              ),
         const SizedBox(height: 4),
-        Text(label, style: TextStyle(fontSize: 12, color: Colors.grey[600])),
+        Text(
+          label,
+          style: TextStyle(fontSize: 12, color: Colors.grey[600]),
+        ),
       ],
     );
   }
