@@ -762,17 +762,18 @@ class _CreditDashboardState extends State<CreditDashboard> {
 
     return Card(
       elevation: 4,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       child: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
           children: [
             Row(
               children: [
                 Container(
-                  height: 32,
-                  width: 32,
+                  height: 30,
+                  width: 30,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
                     color: scoreColor.withOpacity(0.12),
@@ -794,7 +795,7 @@ class _CreditDashboardState extends State<CreditDashboard> {
                           ),
                     ),
                     Text(
-                      'How lenders are likely to see you',
+                      'Overall health of your profile',
                       style: Theme.of(context).textTheme.bodySmall?.copyWith(
                             color: Colors.grey[600],
                           ),
@@ -809,143 +810,114 @@ class _CreditDashboardState extends State<CreditDashboard> {
                     color: scoreColor,
                     borderRadius: BorderRadius.circular(999),
                   ),
-                  child: Row(
-                    children: [
-                      Container(
-                        width: 6,
-                        height: 6,
-                        decoration: const BoxDecoration(
-                          color: Colors.white,
-                          shape: BoxShape.circle,
-                        ),
-                      ),
-                      const SizedBox(width: 6),
-                      Text(
-                        scoreLabel,
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontWeight: FontWeight.w600,
-                          fontSize: 12,
-                        ),
-                      ),
-                    ],
+                  child: Text(
+                    scoreLabel,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.w600,
+                      fontSize: 12,
+                    ),
                   ),
                 ),
               ],
             ),
             const SizedBox(height: 16),
-            LayoutBuilder(
-              builder: (context, constraints) {
-                final scoreDetails = TweenAnimationBuilder<int>(
-                  tween: IntTween(
-                    begin: 0,
-                    end: creditScore.toInt(),
-                  ),
-                  duration: const Duration(milliseconds: 900),
-                  curve: Curves.easeOutCubic,
-                  builder: (context, animatedValue, _) {
-                    return Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          animatedValue.toString(),
-                          style: Theme.of(context)
-                              .textTheme
-                              .headlineSmall
-                              ?.copyWith(
-                                fontWeight: FontWeight.w800,
-                                color: Theme.of(context).colorScheme.primary,
-                                fontSize: 30,
-                              ),
-                        ),
-                        const SizedBox(height: 4),
-                        Text(
-                          'out of ${maxCreditScore.toInt()}',
-                          style: Theme.of(context)
-                              .textTheme
-                              .bodySmall
-                              ?.copyWith(color: Colors.grey[600]),
-                        ),
-                        const SizedBox(height: 8),
-                        Text(
-                          'You are doing better than many borrowers in your range.',
-                          style: Theme.of(context)
-                              .textTheme
-                              .bodySmall
-                              ?.copyWith(color: Colors.grey[700]),
-                        ),
-                        const SizedBox(height: 6),
-                        Row(
+            Center(
+              child: TweenAnimationBuilder<double>(
+                tween: Tween(begin: 0, end: scorePercentage),
+                duration: const Duration(milliseconds: 900),
+                curve: Curves.easeOutCubic,
+                builder: (context, animatedValue, _) {
+                  final animatedScore =
+                      (maxCreditScore * animatedValue).clamp(0, maxCreditScore);
+                  return Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      SizedBox(
+                        width: 130,
+                        height: 130,
+                        child: Stack(
+                          alignment: Alignment.center,
                           children: [
-                            Icon(
-                              Icons.trending_up_rounded,
-                              size: 16,
-                              color: Colors.green[600],
+                            CircularProgressIndicator(
+                              value: animatedValue,
+                              strokeWidth: 9,
+                              backgroundColor: Colors.grey[200],
+                              valueColor: AlwaysStoppedAnimation<Color>(
+                                scoreColor,
+                              ),
                             ),
-                            const SizedBox(width: 4),
-                            TweenAnimationBuilder<int>(
-                              tween: IntTween(begin: 0, end: 12),
-                              duration: const Duration(milliseconds: 700),
-                              curve: Curves.easeOutCubic,
-                              builder: (context, trendValue, _) {
-                                return Text(
-                                  '+$trendValue pts last 30 days',
+                            Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                TweenAnimationBuilder<int>(
+                                  tween: IntTween(
+                                    begin: 0,
+                                    end: creditScore.toInt(),
+                                  ),
+                                  duration:
+                                      const Duration(milliseconds: 900),
+                                  curve: Curves.easeOutCubic,
+                                  builder: (context, value, _) {
+                                    return Text(
+                                      value.toString(),
+                                      style: Theme.of(context)
+                                          .textTheme
+                                          .headlineSmall
+                                          ?.copyWith(
+                                            fontWeight: FontWeight.w800,
+                                            color: Theme.of(context)
+                                                .colorScheme
+                                                .primary,
+                                          ),
+                                    );
+                                  },
+                                ),
+                                Text(
+                                  'out of ${maxCreditScore.toInt()}',
                                   style: Theme.of(context)
                                       .textTheme
                                       .bodySmall
-                                      ?.copyWith(
-                                        color: Colors.green[700],
-                                        fontWeight: FontWeight.w600,
-                                      ),
-                                );
-                              },
+                                      ?.copyWith(color: Colors.grey[600]),
+                                ),
+                              ],
                             ),
                           ],
                         ),
-                      ],
-                    );
-                  },
-                );
-
-                final scoreGauge = TweenAnimationBuilder<double>(
-                  tween: Tween(begin: 0, end: scorePercentage),
-                  duration: const Duration(milliseconds: 900),
-                  curve: Curves.easeOutCubic,
-                  builder: (context, animatedValue, _) {
-                    final gaugeSize =
-                        constraints.maxWidth * 0.4 > 100 ? 100.0 : 86.0;
-                    return SizedBox(
-                      height: gaugeSize,
-                      child: Center(
-                        child: SizedBox(
-                          width: gaugeSize,
-                          height: gaugeSize,
-                          child: CircularProgressIndicator(
-                            value: animatedValue,
-                            strokeWidth: 8,
-                            backgroundColor: Colors.grey[200],
-                            valueColor: AlwaysStoppedAnimation<Color>(
-                              scoreColor,
-                            ),
-                          ),
-                        ),
                       ),
-                    );
-                  },
-                );
-
-                return Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    scoreDetails,
-                    const SizedBox(height: 12),
-                    Align(
-                      alignment: Alignment.centerLeft,
-                      child: scoreGauge,
-                    ),
-                  ],
-                );
-              },
+                      const SizedBox(height: 8),
+                      Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
+                            Icons.trending_up_rounded,
+                            size: 16,
+                            color: Colors.green[600],
+                          ),
+                          const SizedBox(width: 4),
+                          TweenAnimationBuilder<int>(
+                            tween: IntTween(begin: 0, end: 12),
+                            duration: const Duration(milliseconds: 700),
+                            curve: Curves.easeOutCubic,
+                            builder: (context, trendValue, _) {
+                              return Text(
+                                '+$trendValue pts last 30 days',
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .bodySmall
+                                    ?.copyWith(
+                                      color: Colors.green[700],
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                              );
+                            },
+                          ),
+                        ],
+                      ),
+                    ],
+                  );
+                },
+              ),
             ),
             const SizedBox(height: 16),
             _buildScoreRangeIndicator(context),
