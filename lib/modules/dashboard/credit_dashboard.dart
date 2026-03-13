@@ -389,145 +389,132 @@ class _CreditDashboardState extends State<CreditDashboard> {
   Widget _buildQuickActionsSection(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
 
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(20),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Text(
-                'Quick actions',
-                style: Theme.of(
-                  context,
-                ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w800),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Text(
+              'Quick actions',
+              style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.w800,
+                  ),
+            ),
+            const Spacer(),
+            Text(
+              'Most used',
+              style: Theme.of(context)
+                  .textTheme
+                  .bodySmall
+                  ?.copyWith(color: Colors.grey[600]),
+            ),
+          ],
+        ),
+        const SizedBox(height: 10),
+        Row(
+          children: [
+            Expanded(
+              child: _QuickActionTile(
+                icon: Icons.receipt_long_rounded,
+                label: 'Credit report',
+                tint: colorScheme.primary,
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const CreditReportScreen(),
+                    ),
+                  );
+                },
               ),
-              const Spacer(),
-              Text(
-                'Most used',
-                style: Theme.of(
-                  context,
-                ).textTheme.bodySmall?.copyWith(color: Colors.grey[600]),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: _QuickActionTile(
+                icon: Icons.payments_rounded,
+                label: 'Make payment',
+                tint: const Color(0xFF16A34A),
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const PaymentsScreen(),
+                    ),
+                  );
+                },
               ),
-            ],
-          ),
-          const SizedBox(height: 12),
-          Row(
-            children: [
-              Expanded(
-                child: _QuickActionTile(
-                  icon: Icons.receipt_long_rounded,
-                  label: 'Credit report',
-                  tint: colorScheme.primary,
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => const CreditReportScreen(),
-                      ),
-                    );
-                  },
-                ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: _QuickActionTile(
+                icon: Icons.support_agent_rounded,
+                label: 'Support',
+                tint: const Color(0xFF7C3AED),
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const SupportScreen(),
+                    ),
+                  );
+                },
               ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: _QuickActionTile(
-                  icon: Icons.payments_rounded,
-                  label: 'Make payment',
-                  tint: const Color(0xFF16A34A),
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => const PaymentsScreen(),
-                      ),
-                    );
-                  },
-                ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 10),
+        Row(
+          children: [
+            Expanded(
+              child: _QuickActionTile(
+                icon: Icons.add_card_rounded,
+                label: 'Request loan',
+                tint: const Color(0xFF0284C7),
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const RequestLoanScreen(),
+                    ),
+                  );
+                },
               ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: _QuickActionTile(
-                  icon: Icons.support_agent_rounded,
-                  label: 'Support',
-                  tint: const Color(0xFF7C3AED),
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => const SupportScreen(),
-                      ),
-                    );
-                  },
-                ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: _QuickActionTile(
+                icon: Icons.history_rounded,
+                label: 'History',
+                tint: const Color(0xFF0F172A),
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const HistoryScreen(),
+                    ),
+                  );
+                },
               ),
-            ],
-          ),
-          const SizedBox(height: 12),
-          Row(
-            children: [
-              Expanded(
-                child: _QuickActionTile(
-                  icon: Icons.add_card_rounded,
-                  label: 'Request loan',
-                  tint: const Color(0xFF0284C7),
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => const RequestLoanScreen(),
-                      ),
-                    );
-                  },
-                ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: _QuickActionTile(
+                icon: Icons.notifications_active_rounded,
+                label: 'Alerts',
+                tint: const Color(0xFFDC2626),
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const NotificationScreen(),
+                    ),
+                  );
+                },
               ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: _QuickActionTile(
-                  icon: Icons.history_rounded,
-                  label: 'History',
-                  tint: const Color(0xFF0F172A),
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => const HistoryScreen(),
-                      ),
-                    );
-                  },
-                ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: _QuickActionTile(
-                  icon: Icons.notifications_active_rounded,
-                  label: 'Alerts',
-                  tint: const Color(0xFFDC2626),
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => const NotificationScreen(),
-                      ),
-                    );
-                  },
-                ),
-              ),
-            ],
-          ),
-        ],
-      ),
+            ),
+          ],
+        ),
+      ],
     );
   }
 
