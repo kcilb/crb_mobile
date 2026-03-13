@@ -571,78 +571,131 @@ class _CreditDashboardState extends State<CreditDashboard> {
   }
 
   Future<void> _promptBalanceCode(BuildContext context) async {
-    final controller = TextEditingController();
     final theme = Theme.of(context);
+    String code = '';
 
     final success = await showDialog<bool>(
           context: context,
           barrierDismissible: true,
           builder: (context) {
-            return AlertDialog(
-              insetPadding:
-                  const EdgeInsets.symmetric(horizontal: 32, vertical: 24),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(20),
-              ),
-              title: Row(
-                children: [
-                  Container(
-                    height: 32,
-                    width: 32,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      color: theme.colorScheme.primary.withOpacity(0.08),
-                    ),
-                    child: Icon(
-                      Icons.lock_outline_rounded,
-                      size: 18,
-                      color: theme.colorScheme.primary,
-                    ),
+            return StatefulBuilder(
+              builder: (context, setSheetState) {
+                return AlertDialog(
+                  insetPadding:
+                      const EdgeInsets.symmetric(horizontal: 48, vertical: 24),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(20),
                   ),
-                  const SizedBox(width: 10),
-                  const Text('View balances'),
-                ],
-              ),
-              content: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Enter your 4‑digit code to reveal available and limit amounts on this device.',
-                    style: theme.textTheme.bodySmall
-                        ?.copyWith(color: Colors.grey[700]),
+                  title: Row(
+                    children: [
+                      Container(
+                        height: 30,
+                        width: 30,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: theme.colorScheme.primary.withOpacity(0.08),
+                        ),
+                        child: Icon(
+                          Icons.lock_outline_rounded,
+                          size: 18,
+                          color: theme.colorScheme.primary,
+                        ),
+                      ),
+                      const SizedBox(width: 10),
+                      const Text('View balances'),
+                    ],
                   ),
-                  const SizedBox(height: 12),
-                  TextField(
-                    controller: controller,
-                    keyboardType: TextInputType.number,
-                    maxLength: 4,
-                    obscureText: true,
-                    decoration: const InputDecoration(
-                      counterText: '',
-                      labelText: 'Security code',
-                      hintText: '••••',
+                  content: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Enter your 4‑digit code to reveal amounts.',
+                        style: theme.textTheme.bodySmall
+                            ?.copyWith(color: Colors.grey[700]),
+                      ),
+                      const SizedBox(height: 12),
+                      SizedBox(
+                        height: 56,
+                        child: Stack(
+                          alignment: Alignment.center,
+                          children: [
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                              children: List.generate(4, (index) {
+                                final digit =
+                                    index < code.length ? code[index] : '';
+                                return Container(
+                                  width: 42,
+                                  height: 42,
+                                  decoration: BoxDecoration(
+                                    shape: BoxShape.circle,
+                                    border: Border.all(
+                                      color: digit.isNotEmpty
+                                          ? theme.colorScheme.primary
+                                          : Colors.grey.shade300,
+                                    ),
+                                    color: digit.isNotEmpty
+                                        ? theme.colorScheme.primary
+                                            .withOpacity(0.06)
+                                        : Colors.transparent,
+                                  ),
+                                  alignment: Alignment.center,
+                                  child: Text(
+                                    digit,
+                                    style: theme.textTheme.titleMedium
+                                        ?.copyWith(
+                                      fontWeight: FontWeight.w700,
+                                      color: theme.colorScheme.primary,
+                                    ),
+                                  ),
+                                );
+                              }),
+                            ),
+                            // Invisible text field capturing input
+                            Opacity(
+                              opacity: 0.0,
+                              child: TextField(
+                                autofocus: true,
+                                keyboardType: TextInputType.number,
+                                maxLength: 4,
+                                onChanged: (value) {
+                                  if (value.length <= 4) {
+                                    setSheetState(() {
+                                      code = value;
+                                    });
+                                  }
+                                },
+                                decoration: const InputDecoration(
+                                  counterText: '',
+                                  border: InputBorder.none,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                  actions: [
+                    TextButton(
+                      onPressed: () => Navigator.of(context).pop(false),
+                      child: const Text('Cancel'),
                     ),
-                  ),
-                ],
-              ),
-              actions: [
-                TextButton(
-                  onPressed: () => Navigator.of(context).pop(false),
-                  child: const Text('Cancel'),
-                ),
-                FilledButton(
-                  onPressed: () {
-                    // Demo: accept 1234 as the correct code
-                    if (controller.text == '1234') {
-                      Navigator.of(context).pop(true);
-                    } else {
-                      Navigator.of(context).pop(false);
-                    }
-                  },
-                  child: const Text('Confirm'),
-                ),
-              ],
+                    FilledButton(
+                      onPressed: () {
+                        // Demo: accept 1234 as the correct code
+                        if (code == '1234') {
+                          Navigator.of(context).pop(true);
+                        } else {
+                          Navigator.of(context).pop(false);
+                        }
+                      },
+                      child: const Text('Confirm'),
+                    ),
+                  ],
+                );
+              },
             );
           },
         ) ??
