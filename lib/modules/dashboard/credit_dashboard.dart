@@ -836,8 +836,6 @@ class _CreditDashboardState extends State<CreditDashboard> {
             const SizedBox(height: 16),
             LayoutBuilder(
               builder: (context, constraints) {
-                final isNarrow = constraints.maxWidth < 340;
-
                 final scoreDetails = TweenAnimationBuilder<int>(
                   tween: IntTween(
                     begin: 0,
@@ -915,7 +913,7 @@ class _CreditDashboardState extends State<CreditDashboard> {
                   curve: Curves.easeOutCubic,
                   builder: (context, animatedValue, _) {
                     final gaugeSize =
-                        isNarrow ? 96.0 : 120.0; // smaller on narrow screens
+                        constraints.maxWidth * 0.4 > 100 ? 100.0 : 86.0;
                     return SizedBox(
                       height: gaugeSize,
                       child: Center(
@@ -924,7 +922,7 @@ class _CreditDashboardState extends State<CreditDashboard> {
                           height: gaugeSize,
                           child: CircularProgressIndicator(
                             value: animatedValue,
-                            strokeWidth: 9,
+                            strokeWidth: 8,
                             backgroundColor: Colors.grey[200],
                             valueColor: AlwaysStoppedAnimation<Color>(
                               scoreColor,
@@ -936,25 +934,15 @@ class _CreditDashboardState extends State<CreditDashboard> {
                   },
                 );
 
-                if (isNarrow) {
-                  return Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      scoreDetails,
-                      const SizedBox(height: 12),
-                      Align(
-                        alignment: Alignment.centerLeft,
-                        child: scoreGauge,
-                      ),
-                    ],
-                  );
-                }
-
-                return Row(
+                return Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Expanded(flex: 5, child: scoreDetails),
-                    const SizedBox(width: 12),
-                    Expanded(flex: 4, child: scoreGauge),
+                    scoreDetails,
+                    const SizedBox(height: 12),
+                    Align(
+                      alignment: Alignment.centerLeft,
+                      child: scoreGauge,
+                    ),
                   ],
                 );
               },
