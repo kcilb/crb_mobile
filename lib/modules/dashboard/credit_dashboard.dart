@@ -115,32 +115,44 @@ class _CreditDashboardState extends State<CreditDashboard> {
             ),
           ),
 
-          // Main Content
-          SingleChildScrollView(
-            padding: EdgeInsets.only(
-              top: MediaQuery.of(context).padding.top + kToolbarHeight,
-              left: 16,
-              right: 16,
-              bottom: 16,
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                const SizedBox(height: 10),
-                _buildHeaderStrip(context),
-                const SizedBox(height: 14),
-                _buildUserSummaryCard(context),
-                const SizedBox(height: 12),
-                _buildQuickActionsSection(context),
-                const SizedBox(height: 12),
-                _buildCreditScoreCard(context),
-                const SizedBox(height: 12),
-                _buildColorLoanCards(context),
-                const SizedBox(height: 12),
-                _buildLoanEligibilityCard(context),
-                const SizedBox(height: 12),
-                _buildRecentInquiriesSection(context),
-              ],
+          // Main content with sticky header
+          Positioned.fill(
+            child: Padding(
+              padding: EdgeInsets.only(
+                top: MediaQuery.of(context).padding.top + kToolbarHeight,
+                left: 16,
+                right: 16,
+                bottom: 16,
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  const SizedBox(height: 10),
+                  _buildHeaderStrip(context),
+                  const SizedBox(height: 14),
+                  Expanded(
+                    child: SingleChildScrollView(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          _buildUserSummaryCard(context),
+                          const SizedBox(height: 12),
+                          _buildQuickActionsSection(context),
+                          const SizedBox(height: 12),
+                          _buildCreditScoreCard(context),
+                          const SizedBox(height: 12),
+                          _buildColorLoanCards(context),
+                          const SizedBox(height: 12),
+                          _buildLoanEligibilityCard(context),
+                          const SizedBox(height: 12),
+                          _buildRecentInquiriesSection(context),
+                          const SizedBox(height: 8),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
         ],
