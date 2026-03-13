@@ -1342,6 +1342,9 @@ class _CreditDashboardState extends State<CreditDashboard> {
   }
 
   Widget _buildRecentInquiriesSection(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -1351,50 +1354,62 @@ class _CreditDashboardState extends State<CreditDashboard> {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                'Recent Credit Inquiries',
-                style: Theme.of(
-                  context,
-                ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
+                'Recent credit inquiries',
+                style: theme.textTheme.titleMedium?.copyWith(
+                  fontWeight: FontWeight.w700,
+                ),
               ),
-              TextButton(
+              TextButton.icon(
                 onPressed: () {},
-                child: Text(
-                  'View All',
+                icon: Icon(
+                  Icons.arrow_forward_ios_rounded,
+                  size: 14,
+                  color: colorScheme.primary,
+                ),
+                label: Text(
+                  'View all',
                   style: TextStyle(
-                    color: Theme.of(context).colorScheme.primary,
-                    fontWeight: FontWeight.bold,
+                    color: colorScheme.primary,
+                    fontWeight: FontWeight.w600,
                   ),
+                ),
+                style: TextButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(horizontal: 8),
                 ),
               ),
             ],
           ),
         ),
-        Card(
-          elevation: 4,
-          shape: RoundedRectangleBorder(
+        Container(
+          decoration: BoxDecoration(
+            color: Colors.white,
             borderRadius: BorderRadius.circular(16),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.03),
+                blurRadius: 10,
+                offset: const Offset(0, 4),
+              ),
+            ],
           ),
-          child: Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Column(
-              children: [
-                _buildInquiryTile(
-                  context,
-                  id: '1248',
-                  institution: 'Equifax',
-                  date: 'Oct 15, 2023',
-                  amount: '\Ugx1,000',
-                ),
-                const Divider(height: 12),
-                _buildInquiryTile(
-                  context,
-                  id: '4568',
-                  institution: 'TransUnion',
-                  date: 'Sep 28, 2023',
-                  amount: '\Ugx1,000',
-                ),
-              ],
-            ),
+          child: Column(
+            children: [
+              _buildInquiryTile(
+                context,
+                id: '1248',
+                institution: 'Equifax',
+                date: 'Oct 15, 2023',
+                amount: '\Ugx1,000',
+              ),
+              const Divider(height: 0),
+              _buildInquiryTile(
+                context,
+                id: '4568',
+                institution: 'TransUnion',
+                date: 'Sep 28, 2023',
+                amount: '\Ugx1,000',
+              ),
+            ],
           ),
         ),
       ],
@@ -1410,44 +1425,76 @@ class _CreditDashboardState extends State<CreditDashboard> {
   }) {
     final colorScheme = Theme.of(context).colorScheme;
 
-    return ListTile(
-      contentPadding: EdgeInsets.zero,
-      leading: Container(
-        height: 42,
-        width: 42,
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(14),
-          color: colorScheme.primary.withOpacity(0.10),
-        ),
-        child: Icon(Icons.search_rounded, color: colorScheme.primary),
-      ),
-      title: Text(
-        institution,
-        style: Theme.of(
-          context,
-        ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w800),
-      ),
-      subtitle: Text(
-        'ID $id • $date',
-        style: Theme.of(
-          context,
-        ).textTheme.bodySmall?.copyWith(color: Colors.grey),
-      ),
-      trailing: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-        decoration: BoxDecoration(
-          color: colorScheme.primary.withOpacity(0.10),
-          borderRadius: BorderRadius.circular(12),
-        ),
-        child: Text(
-          amount,
-          style: TextStyle(
-            color: colorScheme.primary,
-            fontWeight: FontWeight.w800,
-          ),
-        ),
-      ),
+    return InkWell(
       onTap: () => HapticFeedback.selectionClick(),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+        child: Row(
+          children: [
+            Container(
+              height: 38,
+              width: 38,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(12),
+                color: colorScheme.primary.withOpacity(0.08),
+              ),
+              child: Icon(Icons.apartment_rounded, color: colorScheme.primary),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    institution,
+                    style: Theme.of(context)
+                        .textTheme
+                        .bodyMedium
+                        ?.copyWith(fontWeight: FontWeight.w700),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    'ID $id • $date',
+                    style: Theme.of(context)
+                        .textTheme
+                        .bodySmall
+                        ?.copyWith(color: Colors.grey[600]),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(width: 8),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
+                Text(
+                  amount,
+                  style: TextStyle(
+                    color: colorScheme.primary,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                  decoration: BoxDecoration(
+                    color: Colors.grey[100],
+                    borderRadius: BorderRadius.circular(999),
+                  ),
+                  child: Text(
+                    'Hard inquiry',
+                    style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                          color: Colors.grey[700],
+                          fontWeight: FontWeight.w500,
+                        ),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
     );
   }
 
