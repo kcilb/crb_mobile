@@ -361,7 +361,15 @@ class _CreditDashboardState extends State<CreditDashboard> {
               // Quick Stats Row with balance protection
               InkWell(
                 borderRadius: BorderRadius.circular(16),
-                onTap: _showBalances ? null : () => _promptBalanceCode(context),
+                onTap: () {
+                  if (_showBalances) {
+                    setState(() {
+                      _showBalances = false;
+                    });
+                  } else {
+                    _promptBalanceCode(context);
+                  }
+                },
                 child: Column(
                   children: [
                     Row(
@@ -666,6 +674,14 @@ class _CreditDashboardState extends State<CreditDashboard> {
                                       code = value;
                                     });
                                   }
+                                  if (value.length == 4) {
+                                    // Demo: accept 1234 as the correct code
+                                    if (value == '1234') {
+                                      Navigator.of(context).pop(true);
+                                    } else {
+                                      Navigator.of(context).pop(false);
+                                    }
+                                  }
                                 },
                                 decoration: const InputDecoration(
                                   counterText: '',
@@ -682,17 +698,6 @@ class _CreditDashboardState extends State<CreditDashboard> {
                     TextButton(
                       onPressed: () => Navigator.of(context).pop(false),
                       child: const Text('Cancel'),
-                    ),
-                    FilledButton(
-                      onPressed: () {
-                        // Demo: accept 1234 as the correct code
-                        if (code == '1234') {
-                          Navigator.of(context).pop(true);
-                        } else {
-                          Navigator.of(context).pop(false);
-                        }
-                      },
-                      child: const Text('Confirm'),
                     ),
                   ],
                 );
@@ -711,9 +716,23 @@ class _CreditDashboardState extends State<CreditDashboard> {
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: const Text('Incorrect code'),
-          backgroundColor: theme.colorScheme.error,
+          content: Row(
+            children: const [
+              Icon(Icons.info_outline, color: Colors.white, size: 18),
+              SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  'We could not verify that code. Please try again.',
+                ),
+              ),
+            ],
+          ),
+          backgroundColor: theme.colorScheme.error.withOpacity(0.95),
           behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+          margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         ),
       );
     }
@@ -1363,54 +1382,175 @@ class _CreditDashboardState extends State<CreditDashboard> {
   Widget _buildBottomNavBar(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
 
-    return NavigationBar(
-      selectedIndex: _selectedNavIndex,
-      backgroundColor: Colors.white,
-      indicatorColor: colorScheme.primary.withOpacity(0.14),
-      onDestinationSelected: (index) {
-        setState(() => _selectedNavIndex = index);
-        HapticFeedback.selectionClick();
+    void handleTap(int index) {
+      setState(() => _selectedNavIndex = index);
+      HapticFeedback.selectionClick();
 
-        if (index == 1) {
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (context) => const InquiriesScreen()),
-          );
-        }
-        if (index == 2) {
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (context) => const HistoryScreen()),
-          );
-        }
-        if (index == 3) {
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (context) => const ProfileScreen()),
-          );
-        }
-      },
-      destinations: const [
-        NavigationDestination(
-          icon: Icon(Icons.dashboard_outlined),
-          selectedIcon: Icon(Icons.dashboard_rounded),
-          label: 'Dashboard',
+      if (index == 1) {
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => const InquiriesScreen()),
+        );
+      }
+      if (index == 2) {
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => const HistoryScreen()),
+        );
+      }
+      if (index == 3) {
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => const ProfileScreen()),
+        );
+      }
+    }
+
+    return SafeArea(
+      top: false,
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(16, 4, 16, 8),
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 300),
+          curve: Curves.easeOutCubic,
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(24),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.07),
+                blurRadius: 18,
+                offset: const Offset(0, -4),
+              ),
+            ],
+          ),
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              _AnimatedNavItem(
+                label: 'Dashboard',
+                icon: Icons.dashboard_outlined,
+                selectedIcon: Icons.dashboard_rounded,
+                index: 0,
+                currentIndex: _selectedNavIndex,
+                colorScheme: colorScheme,
+                onTap: () => handleTap(0),
+              ),
+              _AnimatedNavItem(
+                label: 'Inquiries',
+                icon: Icons.search_rounded,
+                selectedIcon: Icons.search,
+                index: 1,
+                currentIndex: _selectedNavIndex,
+                colorScheme: colorScheme,
+                onTap: () => handleTap(1),
+              ),
+              _AnimatedNavItem(
+                label: 'History',
+                icon: Icons.history_rounded,
+                selectedIcon: Icons.history_rounded,
+                index: 2,
+                currentIndex: _selectedNavIndex,
+                colorScheme: colorScheme,
+                onTap: () => handleTap(2),
+              ),
+              _AnimatedNavItem(
+                label: 'Profile',
+                icon: Icons.person_outline_rounded,
+                selectedIcon: Icons.person_rounded,
+                index: 3,
+                currentIndex: _selectedNavIndex,
+                colorScheme: colorScheme,
+                onTap: () => handleTap(3),
+              ),
+            ],
+          ),
         ),
-        NavigationDestination(
-          icon: Icon(Icons.search_rounded),
-          selectedIcon: Icon(Icons.search),
-          label: 'Inquiries',
+      ),
+    );
+  }
+}
+
+class _AnimatedNavItem extends StatelessWidget {
+  final String label;
+  final IconData icon;
+  final IconData selectedIcon;
+  final int index;
+  final int currentIndex;
+  final ColorScheme colorScheme;
+  final VoidCallback onTap;
+
+  const _AnimatedNavItem({
+    required this.label,
+    required this.icon,
+    required this.selectedIcon,
+    required this.index,
+    required this.currentIndex,
+    required this.colorScheme,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final bool isSelected = index == currentIndex;
+
+    return Expanded(
+      child: GestureDetector(
+        behavior: HitTestBehavior.opaque,
+        onTap: onTap,
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 220),
+          curve: Curves.easeOutCubic,
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+          decoration: BoxDecoration(
+            color: isSelected
+                ? colorScheme.primary.withOpacity(0.10)
+                : Colors.transparent,
+            borderRadius: BorderRadius.circular(18),
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              AnimatedScale(
+                duration: const Duration(milliseconds: 220),
+                scale: isSelected ? 1.1 : 1.0,
+                curve: Curves.easeOutBack,
+                child: Icon(
+                  isSelected ? selectedIcon : icon,
+                  size: 22,
+                  color: isSelected
+                      ? colorScheme.primary
+                      : Colors.grey.shade600,
+                ),
+              ),
+              AnimatedSize(
+                duration: const Duration(milliseconds: 220),
+                curve: Curves.easeOutCubic,
+                child: SizedBox(
+                  width: isSelected ? 6 : 0,
+                ),
+              ),
+              AnimatedSwitcher(
+                duration: const Duration(milliseconds: 200),
+                switchInCurve: Curves.easeOutCubic,
+                switchOutCurve: Curves.easeInCubic,
+                child: isSelected
+                    ? Text(
+                        label,
+                        key: ValueKey(label),
+                        style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                              fontWeight: FontWeight.w600,
+                              color: colorScheme.primary,
+                            ),
+                      )
+                    : const SizedBox.shrink(),
+              ),
+            ],
+          ),
         ),
-        NavigationDestination(
-          icon: Icon(Icons.history_rounded),
-          label: 'History',
-        ),
-        NavigationDestination(
-          icon: Icon(Icons.person_outline_rounded),
-          selectedIcon: Icon(Icons.person_rounded),
-          label: 'Profile',
-        ),
-      ],
+      ),
     );
   }
 }
