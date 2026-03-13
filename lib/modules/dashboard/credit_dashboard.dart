@@ -834,105 +834,121 @@ class _CreditDashboardState extends State<CreditDashboard> {
               ],
             ),
             const SizedBox(height: 16),
-            Row(
-              children: [
-                Expanded(
-                  flex: 5,
-                  child: TweenAnimationBuilder<double>(
-                    tween: Tween(begin: 0, end: scorePercentage),
-                    duration: const Duration(milliseconds: 900),
-                    curve: Curves.easeOutCubic,
-                    builder: (context, animatedValue, _) {
-                      final animatedScore = maxCreditScore * animatedValue;
-                      return Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            animatedScore.toStringAsFixed(0),
-                            style: Theme.of(context)
-                                .textTheme
-                                .headlineSmall
-                                ?.copyWith(
-                                  fontWeight: FontWeight.w800,
-                                  color:
-                                      Theme.of(context).colorScheme.primary,
-                                  fontSize: 30,
-                                ),
-                          ),
-                          const SizedBox(height: 4),
-                          Text(
-                            'out of ${maxCreditScore.toInt()}',
-                            style: Theme.of(context)
-                                .textTheme
-                                .bodySmall
-                                ?.copyWith(color: Colors.grey[600]),
-                          ),
-                          const SizedBox(height: 8),
-                          Text(
-                            'You are doing better than many borrowers in your range.',
-                            style: Theme.of(context)
-                                .textTheme
-                                .bodySmall
-                                ?.copyWith(color: Colors.grey[700]),
-                          ),
-                          const SizedBox(height: 6),
-                          Row(
-                            children: [
-                              Icon(
-                                Icons.trending_up_rounded,
-                                size: 16,
-                                color: Colors.green[600],
+            LayoutBuilder(
+              builder: (context, constraints) {
+                final isNarrow = constraints.maxWidth < 340;
+
+                final scoreDetails = TweenAnimationBuilder<double>(
+                  tween: Tween(begin: 0, end: scorePercentage),
+                  duration: const Duration(milliseconds: 900),
+                  curve: Curves.easeOutCubic,
+                  builder: (context, animatedValue, _) {
+                    final animatedScore = maxCreditScore * animatedValue;
+                    return Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          animatedScore.toStringAsFixed(0),
+                          style: Theme.of(context)
+                              .textTheme
+                              .headlineSmall
+                              ?.copyWith(
+                                fontWeight: FontWeight.w800,
+                                color: Theme.of(context).colorScheme.primary,
+                                fontSize: 30,
                               ),
-                              const SizedBox(width: 4),
-                              Text(
-                                '+12 pts last 30 days',
-                                style: Theme.of(context)
-                                    .textTheme
-                                    .bodySmall
-                                    ?.copyWith(
-                                      color: Colors.green[700],
-                                      fontWeight: FontWeight.w600,
-                                    ),
-                              ),
-                            ],
-                          ),
-                        ],
-                      );
-                    },
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  flex: 4,
-                  child: TweenAnimationBuilder<double>(
-                    tween: Tween(begin: 0, end: scorePercentage),
-                    duration: const Duration(milliseconds: 900),
-                    curve: Curves.easeOutCubic,
-                    builder: (context, animatedValue, _) {
-                      return SizedBox(
-                        height: 120,
-                        child: Stack(
-                          alignment: Alignment.center,
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          'out of ${maxCreditScore.toInt()}',
+                          style: Theme.of(context)
+                              .textTheme
+                              .bodySmall
+                              ?.copyWith(color: Colors.grey[600]),
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          'You are doing better than many borrowers in your range.',
+                          style: Theme.of(context)
+                              .textTheme
+                              .bodySmall
+                              ?.copyWith(color: Colors.grey[700]),
+                        ),
+                        const SizedBox(height: 6),
+                        Row(
                           children: [
-                            SizedBox(
-                              width: 120,
-                              height: 120,
-                              child: CircularProgressIndicator(
-                                value: animatedValue,
-                                strokeWidth: 9,
-                                backgroundColor: Colors.grey[200],
-                                valueColor: AlwaysStoppedAnimation<Color>(
-                                  scoreColor,
-                                ),
-                              ),
+                            Icon(
+                              Icons.trending_up_rounded,
+                              size: 16,
+                              color: Colors.green[600],
+                            ),
+                            const SizedBox(width: 4),
+                            Text(
+                              '+12 pts last 30 days',
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .bodySmall
+                                  ?.copyWith(
+                                    color: Colors.green[700],
+                                    fontWeight: FontWeight.w600,
+                                  ),
                             ),
                           ],
                         ),
-                      );
-                    },
-                  ),
-                ),
-              ],
+                      ],
+                    );
+                  },
+                );
+
+                final scoreGauge = TweenAnimationBuilder<double>(
+                  tween: Tween(begin: 0, end: scorePercentage),
+                  duration: const Duration(milliseconds: 900),
+                  curve: Curves.easeOutCubic,
+                  builder: (context, animatedValue, _) {
+                    final gaugeSize =
+                        isNarrow ? 96.0 : 120.0; // smaller on narrow screens
+                    return SizedBox(
+                      height: gaugeSize,
+                      child: Center(
+                        child: SizedBox(
+                          width: gaugeSize,
+                          height: gaugeSize,
+                          child: CircularProgressIndicator(
+                            value: animatedValue,
+                            strokeWidth: 9,
+                            backgroundColor: Colors.grey[200],
+                            valueColor: AlwaysStoppedAnimation<Color>(
+                              scoreColor,
+                            ),
+                          ),
+                        ),
+                      ),
+                    );
+                  },
+                );
+
+                if (isNarrow) {
+                  return Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      scoreDetails,
+                      const SizedBox(height: 12),
+                      Align(
+                        alignment: Alignment.centerLeft,
+                        child: scoreGauge,
+                      ),
+                    ],
+                  );
+                }
+
+                return Row(
+                  children: [
+                    Expanded(flex: 5, child: scoreDetails),
+                    const SizedBox(width: 12),
+                    Expanded(flex: 4, child: scoreGauge),
+                  ],
+                );
+              },
             ),
             const SizedBox(height: 16),
             _buildScoreRangeIndicator(context),
