@@ -144,14 +144,14 @@ class _CreditDashboardState extends State<CreditDashboard> {
                 children: [
                   const SizedBox(height: 10),
                   _buildHeaderStrip(context),
-                  const SizedBox(height: 14),
+                  const SizedBox(height: 10),
+                  _buildUserSummaryCard(context),
+                  const SizedBox(height: 12),
                   Expanded(
                     child: SingleChildScrollView(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.stretch,
                         children: [
-                          _buildUserSummaryCard(context),
-                          const SizedBox(height: 12),
                           _buildQuickActionsSection(context),
                           const SizedBox(height: 12),
                           _buildCreditScoreCard(context),
@@ -233,10 +233,7 @@ class _CreditDashboardState extends State<CreditDashboard> {
             gradient: const LinearGradient(
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
-              colors: [
-                Color(0xFFFFFFFF),
-                Color(0xFFF4F7FF),
-              ],
+              colors: [Color(0xFFFFFFFF), Color(0xFFF4F7FF)],
             ),
             borderRadius: BorderRadius.circular(22),
             boxShadow: [
@@ -257,10 +254,7 @@ class _CreditDashboardState extends State<CreditDashboard> {
                     duration: const Duration(milliseconds: 600),
                     curve: Curves.easeOutBack,
                     builder: (context, scale, child) {
-                      return Transform.scale(
-                        scale: scale,
-                        child: child,
-                      );
+                      return Transform.scale(scale: scale, child: child);
                     },
                     child: Container(
                       width: 72,
@@ -280,7 +274,9 @@ class _CreditDashboardState extends State<CreditDashboard> {
                           shape: BoxShape.circle,
                           color: Colors.grey[200],
                           image: const DecorationImage(
-                            image: AssetImage('assets/images/default_photo.png'),
+                            image: AssetImage(
+                              'assets/images/default_photo.png',
+                            ),
                             fit: BoxFit.cover,
                           ),
                         ),
@@ -288,12 +284,8 @@ class _CreditDashboardState extends State<CreditDashboard> {
                         child: Image.asset(
                           'assets/images/default_photo.png',
                           fit: BoxFit.cover,
-                          errorBuilder: (
-                            context,
-                            error,
-                            stackTrace,
-                          ) =>
-                              const Icon(
+                          errorBuilder:
+                              (context, error, stackTrace) => const Icon(
                                 Icons.person,
                                 size: 32,
                                 color: Colors.grey,
@@ -313,18 +305,17 @@ class _CreditDashboardState extends State<CreditDashboard> {
                           userName,
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
-                          style:
-                              Theme.of(context).textTheme.titleLarge?.copyWith(
-                                    fontWeight: FontWeight.w800,
-                                    color: Colors.black87,
-                                  ),
+                          style: Theme.of(
+                            context,
+                          ).textTheme.titleLarge?.copyWith(
+                            fontWeight: FontWeight.w800,
+                            color: Colors.black87,
+                          ),
                         ),
                         const SizedBox(height: 4),
                         Text(
                           'Member since $memberSince',
-                          style: Theme.of(context)
-                              .textTheme
-                              .bodyMedium
+                          style: Theme.of(context).textTheme.bodyMedium
                               ?.copyWith(color: Colors.grey[600]),
                         ),
                         const SizedBox(height: 8),
@@ -370,7 +361,10 @@ class _CreditDashboardState extends State<CreditDashboard> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceAround,
                 children: [
-                  _buildStatItem('Credit Score', creditScore.toStringAsFixed(0)),
+                  _buildStatItem(
+                    'Credit Score',
+                    creditScore.toStringAsFixed(0),
+                  ),
                   _buildStatItem('Available', '\Ugx$availableCredit'),
                   _buildStatItem('Limit', '\Ugx$totalCreditLimit'),
                 ],
