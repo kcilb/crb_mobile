@@ -1495,60 +1495,57 @@ class _AnimatedNavItem extends StatelessWidget {
   Widget build(BuildContext context) {
     final bool isSelected = index == currentIndex;
 
-    return Expanded(
-      child: GestureDetector(
-        behavior: HitTestBehavior.opaque,
-        onTap: onTap,
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 220),
-          curve: Curves.easeOutCubic,
-          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-          decoration: BoxDecoration(
-            color: isSelected
-                ? colorScheme.primary.withOpacity(0.10)
-                : Colors.transparent,
-            borderRadius: BorderRadius.circular(18),
-          ),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              AnimatedScale(
-                duration: const Duration(milliseconds: 220),
-                scale: isSelected ? 1.1 : 1.0,
-                curve: Curves.easeOutBack,
-                child: Icon(
-                  isSelected ? selectedIcon : icon,
-                  size: 22,
-                  color: isSelected
-                      ? colorScheme.primary
-                      : Colors.grey.shade600,
-                ),
+    return GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      onTap: onTap,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 220),
+        curve: Curves.easeOutCubic,
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+        decoration: BoxDecoration(
+          color: isSelected
+              ? colorScheme.primary.withOpacity(0.10)
+              : Colors.transparent,
+          borderRadius: BorderRadius.circular(18),
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            AnimatedScale(
+              duration: const Duration(milliseconds: 220),
+              scale: isSelected ? 1.1 : 1.0,
+              curve: Curves.easeOutBack,
+              child: Icon(
+                isSelected ? selectedIcon : icon,
+                size: 22,
+                color:
+                    isSelected ? colorScheme.primary : Colors.grey.shade600,
               ),
-              AnimatedSize(
-                duration: const Duration(milliseconds: 220),
-                curve: Curves.easeOutCubic,
-                child: SizedBox(
-                  width: isSelected ? 6 : 0,
-                ),
+            ),
+            AnimatedSize(
+              duration: const Duration(milliseconds: 220),
+              curve: Curves.easeOutCubic,
+              child: SizedBox(
+                width: isSelected ? 6 : 0,
               ),
-              AnimatedSwitcher(
-                duration: const Duration(milliseconds: 200),
-                switchInCurve: Curves.easeOutCubic,
-                switchOutCurve: Curves.easeInCubic,
-                child: isSelected
-                    ? Text(
-                        label,
-                        key: ValueKey(label),
-                        style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                              fontWeight: FontWeight.w600,
-                              color: colorScheme.primary,
-                            ),
-                      )
-                    : const SizedBox.shrink(),
-              ),
-            ],
-          ),
+            ),
+            AnimatedSwitcher(
+              duration: const Duration(milliseconds: 200),
+              switchInCurve: Curves.easeOutCubic,
+              switchOutCurve: Curves.easeInCubic,
+              child: isSelected
+                  ? Text(
+                      label,
+                      key: ValueKey(label),
+                      style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                            fontWeight: FontWeight.w600,
+                            color: colorScheme.primary,
+                          ),
+                    )
+                  : const SizedBox.shrink(),
+            ),
+          ],
         ),
       ),
     );
