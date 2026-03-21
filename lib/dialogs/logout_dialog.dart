@@ -48,11 +48,11 @@ class _LogoutDialogWidgetState extends State<_LogoutDialogWidget> {
       child: Dialog(
         backgroundColor: Colors.transparent,
         elevation: 0,
-        insetPadding: const EdgeInsets.symmetric(horizontal: 28, vertical: 24),
+        insetPadding: const EdgeInsets.symmetric(horizontal: 36, vertical: 28),
         child:
             _loading
                 ? ConstrainedBox(
-                  constraints: const BoxConstraints(maxWidth: 320),
+                  constraints: const BoxConstraints(maxWidth: 300),
                   child: const PrimaryBrandLoadingPanel(
                     headerLabel: 'Signing you out',
                     messages: kSignOutLoadingMessages,
@@ -61,15 +61,15 @@ class _LogoutDialogWidgetState extends State<_LogoutDialogWidget> {
                   ),
                 )
                 : ConstrainedBox(
-                  constraints: const BoxConstraints(maxWidth: 360),
+                  constraints: const BoxConstraints(maxWidth: 300),
                   child: Material(
                     color: kThemeBg,
                     surfaceTintColor: Colors.transparent,
-                    elevation: 16,
-                    shadowColor: Colors.black.withOpacity(0.45),
-                    borderRadius: BorderRadius.circular(20),
+                    elevation: 12,
+                    shadowColor: Colors.black.withOpacity(0.4),
+                    borderRadius: BorderRadius.circular(16),
                     child: Padding(
-                      padding: const EdgeInsets.fromLTRB(24, 28, 24, 24),
+                      padding: const EdgeInsets.fromLTRB(18, 18, 18, 16),
                       child: _buildConfirmContent(),
                     ),
                   ),
@@ -86,29 +86,29 @@ class _LogoutDialogWidgetState extends State<_LogoutDialogWidget> {
         const Center(
           child: _AnimatedLogoutIconBadge(),
         ),
-        const SizedBox(height: 20),
+        const SizedBox(height: 12),
         const Text(
           'Log out',
           textAlign: TextAlign.center,
           style: TextStyle(
-            fontSize: 18,
+            fontSize: 16,
             fontWeight: FontWeight.w700,
             color: Colors.white,
-            letterSpacing: -0.3,
+            letterSpacing: -0.2,
           ),
         ),
-        const SizedBox(height: 12),
+        const SizedBox(height: 8),
         Text(
           'You will be signed out on this device. '
           'You can sign in again anytime.',
           textAlign: TextAlign.center,
           style: TextStyle(
-            fontSize: 14,
-            height: 1.45,
+            fontSize: 12.5,
+            height: 1.35,
             color: Colors.white.withOpacity(0.82),
           ),
         ),
-        const SizedBox(height: 28),
+        const SizedBox(height: 18),
         Row(
           children: [
             Expanded(
@@ -117,21 +117,22 @@ class _LogoutDialogWidgetState extends State<_LogoutDialogWidget> {
                 style: OutlinedButton.styleFrom(
                   foregroundColor: Colors.white,
                   side: BorderSide(color: Colors.white.withOpacity(0.75)),
-                  padding: const EdgeInsets.symmetric(vertical: 14),
+                  padding: const EdgeInsets.symmetric(vertical: 10),
+                  minimumSize: const Size(0, 40),
                   shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(14),
+                    borderRadius: BorderRadius.circular(10),
                   ),
                 ),
                 child: const Text(
                   'Cancel',
                   style: TextStyle(
                     fontWeight: FontWeight.w700,
-                    fontSize: 15,
+                    fontSize: 13,
                   ),
                 ),
               ),
             ),
-            const SizedBox(width: 12),
+            const SizedBox(width: 8),
             Expanded(
               child: FilledButton(
                 onPressed: _onConfirmLogout,
@@ -139,13 +140,14 @@ class _LogoutDialogWidgetState extends State<_LogoutDialogWidget> {
                   backgroundColor: kFieldFill,
                   foregroundColor: kThemeBg,
                   elevation: 0,
-                  padding: const EdgeInsets.symmetric(vertical: 14),
+                  padding: const EdgeInsets.symmetric(vertical: 10),
+                  minimumSize: const Size(0, 40),
                   shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(14),
+                    borderRadius: BorderRadius.circular(10),
                   ),
                   textStyle: const TextStyle(
                     fontWeight: FontWeight.w700,
-                    fontSize: 15,
+                    fontSize: 13,
                   ),
                 ),
                 child: const Text('Log out'),
@@ -218,7 +220,7 @@ class _AnimatedLogoutIconBadgeState extends State<_AnimatedLogoutIconBadge>
         );
       },
       child: Container(
-        padding: const EdgeInsets.all(18),
+        padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
           color: Colors.white.withOpacity(0.14),
           shape: BoxShape.circle,
@@ -228,7 +230,7 @@ class _AnimatedLogoutIconBadgeState extends State<_AnimatedLogoutIconBadge>
         ),
         child: const Icon(
           Icons.logout_rounded,
-          size: 36,
+          size: 28,
           color: Colors.white,
         ),
       ),

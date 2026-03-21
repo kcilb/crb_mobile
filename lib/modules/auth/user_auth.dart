@@ -1,6 +1,5 @@
 import 'package:crb_mobile/dialogs/dialog_theme.dart';
 import 'package:crb_mobile/dialogs/otp_dialog.dart';
-import 'package:crb_mobile/modules/auth/widgets/slide_to_biometric_bar.dart';
 import 'package:crb_mobile/modules/dashboard/credit_dashboard.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -22,8 +21,7 @@ class _UserAuthState extends State<UserAuth>
     with SingleTickerProviderStateMixin {
   bool _rememberMe = false;
   bool _obscurePassword = true;
-  bool _showBiometricSlide = false;
-  bool _biometricAvailable = false;
+  bool _biometricBusy = false;
   late final AnimationController _gridController;
   late final Animation<double> _gridOffset;
 
@@ -83,21 +81,59 @@ class _UserAuthState extends State<UserAuth>
       }
     });
 
-    WidgetsBinding.instance.addPostFrameCallback((_) => _initBiometric());
   }
 
-  Future<void> _initBiometric() async {
+  Future<void> _signInWithBiometric() async {
+    if (_biometricBusy) return;
+    setState(() => _biometricBusy = true);
     final auth = LocalAuthentication();
     try {
       final supported = await auth.isDeviceSupported();
-      final canCheck = await auth.canCheckBiometrics;
-      final types = await auth.getAvailableBiometrics();
+      if (!supported) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text(
+                'Biometric sign-in isn’t available on this device.',
+              ),
+            ),
+          );
+        }
+        return;
+      }
+      var ok = await auth.authenticate(
+        localizedReason: 'Sign in to CreditTrack',
+        options: const AuthenticationOptions(
+          biometricOnly: true,
+          stickyAuth: true,
+        ),
+      );
+      if (!ok && mounted) {
+        ok = await auth.authenticate(
+          localizedReason: 'Use your device PIN or pattern to continue',
+          options: const AuthenticationOptions(
+            biometricOnly: false,
+            stickyAuth: true,
+          ),
+        );
+      }
       if (!mounted) return;
-      setState(() {
-        _biometricAvailable = supported && canCheck && types.isNotEmpty;
-      });
-    } catch (_) {
-      if (mounted) setState(() => _biometricAvailable = false);
+      if (ok) {
+        HapticFeedback.mediumImpact();
+        await _completeLoginAfterBiometric();
+      }
+    } on PlatformException catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              e.message ?? 'Biometric authentication failed.',
+            ),
+          ),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _biometricBusy = false);
     }
   }
 
@@ -406,89 +442,92 @@ class _UserAuthState extends State<UserAuth>
                                         ],
                                       ),
                                       const SizedBox(height: 20),
-                                      if (_biometricAvailable) ...[
-                                        Row(
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.center,
-                                          children: [
-                                            Icon(
-                                              Icons.fingerprint_rounded,
-                                              size: 22,
-                                              color: kPrimaryBlue,
-                                            ),
-                                            const SizedBox(width: 8),
-                                            Expanded(
-                                              child: Text(
-                                                'Show slide to use biometric',
-                                                style: TextStyle(
-                                                  fontSize: 14,
-                                                  color:
-                                                      Colors.grey.shade700,
-                                                  fontWeight: FontWeight.w500,
+                                      SizedBox(
+                                        height: 48,
+                                        width: double.infinity,
+                                        child: OutlinedButton.icon(
+                                          onPressed:
+                                              _biometricBusy
+                                                  ? null
+                                                  : _signInWithBiometric,
+                                          icon: _biometricBusy
+                                              ? SizedBox(
+                                                width: 20,
+                                                height: 20,
+                                                child: CircularProgressIndicator(
+                                                  strokeWidth: 2,
+                                                  color: kPrimaryBlue,
                                                 ),
+                                              )
+                                              : const Icon(
+                                                Icons.fingerprint_rounded,
+                                                size: 22,
+                                              ),
+                                          label: Text(
+                                            _biometricBusy
+                                                ? 'Authenticating…'
+                                                : 'Sign in with biometrics',
+                                            style: const TextStyle(
+                                              fontSize: 15,
+                                              fontWeight: FontWeight.w700,
+                                            ),
+                                          ),
+                                          style: OutlinedButton.styleFrom(
+                                            foregroundColor: kPrimaryBlue,
+                                            side: BorderSide(
+                                              color: kPrimaryBlue.withOpacity(
+                                                0.55,
                                               ),
                                             ),
-                                            Switch(
-                                              value: _showBiometricSlide,
-                                              onChanged: (v) {
-                                                setState(
-                                                  () =>
-                                                      _showBiometricSlide = v,
-                                                );
-                                              },
-                                              activeColor: kPrimaryBlue,
-                                            ),
-                                          ],
+                                            shape:
+                                                const RoundedRectangleBorder(
+                                                  borderRadius:
+                                                      BorderRadius.zero,
+                                                ),
+                                          ),
                                         ),
-                                        const SizedBox(height: 12),
-                                      ],
-                                      if (_showBiometricSlide &&
-                                          _biometricAvailable)
-                                        SlideToBiometricBar(
-                                          onAuthenticated:
-                                              _completeLoginAfterBiometric,
-                                        )
-                                      else
-                                        SizedBox(
-                                          height: 52,
-                                          width: double.infinity,
-                                          child: ElevatedButton(
-                                            onPressed: () async {
-                                              await VerificationProgressDialog
-                                                  .showFor(context);
-                                              if (!context.mounted) return;
-                                              Navigator.pushReplacement(
-                                                context,
-                                                MaterialPageRoute(
-                                                  builder:
-                                                      (_) =>
-                                                          const CreditDashboard(),
-                                                ),
-                                              );
-                                            },
-                                            style: ElevatedButton.styleFrom(
-                                              backgroundColor: kPrimaryBlue,
-                                              foregroundColor: Colors.white,
-                                              elevation: 14,
-                                              shadowColor: Colors.black
-                                                  .withOpacity(0.45),
-                                              surfaceTintColor:
-                                                  Colors.transparent,
-                                              shape:
-                                                  const RoundedRectangleBorder(
-                                                    borderRadius:
-                                                        BorderRadius.zero,
-                                                  ),
-                                            ),
-                                            child: const Text(
-                                              'Log In',
-                                              style: TextStyle(
-                                                fontSize: 16,
-                                                fontWeight: FontWeight.w700,
+                                      ),
+                                      const SizedBox(height: 12),
+                                      SizedBox(
+                                        height: 52,
+                                        width: double.infinity,
+                                        child: ElevatedButton(
+                                          onPressed: () async {
+                                            await VerificationProgressDialog
+                                                .showFor(context);
+                                            if (!context.mounted) return;
+                                            Navigator.pushReplacement(
+                                              context,
+                                              MaterialPageRoute(
+                                                builder:
+                                                    (_) =>
+                                                        const CreditDashboard(),
                                               ),
+                                            );
+                                          },
+                                          style: ElevatedButton.styleFrom(
+                                            backgroundColor: kPrimaryBlue,
+                                            foregroundColor: Colors.white,
+                                            elevation: 14,
+                                            shadowColor: Colors.black
+                                                .withOpacity(0.45),
+                                            surfaceTintColor:
+                                                Colors.transparent,
+                                            shape:
+                                                const RoundedRectangleBorder(
+                                                  borderRadius:
+                                                      BorderRadius.zero,
+                                                ),
+                                          ),
+                                          child: const Text(
+                                            'Log In',
+                                            style: TextStyle(
+                                              fontSize: 16,
+                                              fontWeight: FontWeight.w700,
                                             ),
                                           ),
                                         ),
+                                      ),
                                     ],
                                   ),
                                 ),
