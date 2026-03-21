@@ -1,10 +1,13 @@
+import 'package:crb_mobile/dialogs/dialog_theme.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+
 import 'onboarding_screens.dart';
 
 class OnboardingPage extends StatefulWidget {
-  final VoidCallback onComplete;
-
   const OnboardingPage({super.key, required this.onComplete});
+
+  final VoidCallback onComplete;
 
   @override
   State<OnboardingPage> createState() => _OnboardingPageState();
@@ -17,8 +20,8 @@ class _OnboardingPageState extends State<OnboardingPage> {
   void _nextPage() {
     if (_currentPage < 2) {
       _pageController.nextPage(
-        duration: const Duration(milliseconds: 500),
-        curve: Curves.easeInOut,
+        duration: const Duration(milliseconds: 420),
+        curve: Curves.easeOutCubic,
       );
     } else {
       widget.onComplete();
@@ -30,63 +33,74 @@ class _OnboardingPageState extends State<OnboardingPage> {
   }
 
   @override
+  void dispose() {
+    _pageController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.white,
-      body: SafeArea(
-        child: Stack(
+    return AnnotatedRegion<SystemUiOverlayStyle>(
+      value: SystemUiOverlayStyle.light,
+      child: Scaffold(
+        backgroundColor: kThemeBg,
+        body: Stack(
           children: [
-            PageView(
-              controller: _pageController,
-              onPageChanged: (index) {
-                setState(() {
-                  _currentPage = index;
-                });
-              },
-              children: [
-                OnboardingScreen1(onSkip: _skipToEnd, onNext: _nextPage),
-                OnboardingScreen2(onSkip: _skipToEnd, onNext: _nextPage),
-                OnboardingScreen3(onGetStarted: _nextPage),
-              ],
+            Positioned.fill(
+              child: DecoratedBox(
+                decoration: BoxDecoration(gradient: kOnboardingScaffoldGradient),
+              ),
             ),
-            Positioned(
-              top: 16,
-              right: 16,
-              child:
-                  _currentPage < 2
-                      ? TextButton(
-                        onPressed: _skipToEnd,
-                        child: Text(
-                          'Skip',
-                          style: TextStyle(
-                            color: Colors.grey[600],
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                      )
-                      : const SizedBox.shrink(),
+            Positioned.fill(
+              child: CustomPaint(
+                painter: OnboardingWaveBackgroundPainter(),
+              ),
             ),
-            Positioned(
-              bottom: 32,
-              left: 0,
-              right: 0,
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: List.generate(3, (index) {
-                  return AnimatedContainer(
-                    duration: const Duration(milliseconds: 300),
-                    margin: const EdgeInsets.symmetric(horizontal: 4),
-                    width: _currentPage == index ? 24 : 8,
-                    height: 8,
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(4),
-                      color:
-                          _currentPage == index
-                              ? Colors.blue[800]
-                              : Colors.grey[300],
+            SafeArea(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(20, 10, 20, 0),
+                    child: Text(
+                      'CreditTrack',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w800,
+                        letterSpacing: 1.4,
+                        color: Color.lerp(kPrimaryBlue, Colors.white, 0.55)!
+                            .withOpacity(0.85),
+                      ),
                     ),
-                  );
-                }),
+                  ),
+                  Expanded(
+                    child: PageView(
+                      controller: _pageController,
+                      physics: const BouncingScrollPhysics(),
+                      onPageChanged: (index) {
+                        setState(() => _currentPage = index);
+                      },
+                      children: [
+                        OnboardingScreen1(
+                          onNext: _nextPage,
+                          onSkip: _skipToEnd,
+                          activePage: _currentPage,
+                        ),
+                        OnboardingScreen2(
+                          onNext: _nextPage,
+                          onSkip: _skipToEnd,
+                          activePage: _currentPage,
+                        ),
+                        OnboardingScreen3(
+                          onGetStarted: _nextPage,
+                          onSkip: _skipToEnd,
+                          activePage: _currentPage,
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
               ),
             ),
           ],

@@ -22,8 +22,8 @@ class _UserAuthState extends State<UserAuth>
   bool _rememberMe = false;
   bool _obscurePassword = true;
   bool _biometricBusy = false;
-  late final AnimationController _gridController;
-  late final Animation<double> _gridOffset;
+
+  late final AnimationController _waveController;
 
   final ScrollController _scrollController = ScrollController();
   final GlobalKey _emailFieldKey = GlobalKey();
@@ -63,14 +63,10 @@ class _UserAuthState extends State<UserAuth>
   void initState() {
     super.initState();
 
-    _gridController = AnimationController(
+    _waveController = AnimationController(
       vsync: this,
-      duration: const Duration(seconds: 10),
+      duration: const Duration(seconds: 28),
     )..repeat();
-    _gridOffset = Tween<double>(
-      begin: 0,
-      end: 1,
-    ).animate(CurvedAnimation(parent: _gridController, curve: Curves.linear));
 
     _emailFocusNode.addListener(() {
       if (_emailFocusNode.hasFocus) _scrollToField(_emailFieldKey);
@@ -148,7 +144,7 @@ class _UserAuthState extends State<UserAuth>
 
   @override
   void dispose() {
-    _gridController.dispose();
+    _waveController.dispose();
     _scrollController.dispose();
     _emailFocusNode.dispose();
     _passwordFocusNode.dispose();
@@ -166,12 +162,30 @@ class _UserAuthState extends State<UserAuth>
     const overlap = 28.0;
 
     return Scaffold(
-      backgroundColor: Colors.transparent,
+      backgroundColor: kThemeBg,
       resizeToAvoidBottomInset: true,
-      body: Container(
-        decoration: const BoxDecoration(color: kThemeBg),
-        child: LayoutBuilder(
-          builder: (context, constraints) {
+      body: Stack(
+        fit: StackFit.expand,
+        children: [
+          Positioned.fill(
+            child: DecoratedBox(
+              decoration: BoxDecoration(gradient: kOnboardingScaffoldGradient),
+            ),
+          ),
+          Positioned.fill(
+            child: AnimatedBuilder(
+              animation: _waveController,
+              builder: (context, child) {
+                return CustomPaint(
+                  painter: AnimatedOnboardingWaveBackgroundPainter(
+                    phase: _waveController.value,
+                  ),
+                );
+              },
+            ),
+          ),
+          LayoutBuilder(
+            builder: (context, constraints) {
             final h = constraints.maxHeight;
             final headerH = h * headerFlex / (headerFlex + cardFlex);
             final bottomInset = MediaQuery.paddingOf(context).bottom;
@@ -180,33 +194,15 @@ class _UserAuthState extends State<UserAuth>
               fit: StackFit.expand,
               clipBehavior: Clip.none,
               children: [
-                // —— Blue header ——
+                // —— Header (shares onboarding gradient + waves) ——
                 Positioned(
                   top: 0,
                   left: 0,
                   right: 0,
                   height: headerH,
-                  child: Stack(
-                    fit: StackFit.expand,
-                    children: [
-                      Container(
-                        decoration: const BoxDecoration(color: kThemeBg),
-                      ),
-                      AnimatedBuilder(
-                        animation: _gridController,
-                        builder: (context, child) {
-                          return CustomPaint(
-                            painter: _GridPatternPainter(
-                              offset: _gridOffset.value,
-                            ),
-                            child: child,
-                          );
-                        },
-                        child: const SizedBox.expand(),
-                      ),
-                      SafeArea(
-                        bottom: false,
-                        child: Padding(
+                  child: SafeArea(
+                    bottom: false,
+                    child: Padding(
                           padding: const EdgeInsets.fromLTRB(24, 32, 24, 48),
                           child: Column(
                             children: [
@@ -265,8 +261,6 @@ class _UserAuthState extends State<UserAuth>
                             ],
                           ),
                         ),
-                      ),
-                    ],
                   ),
                 ),
                 // —— White card: from below header overlap to bottom of screen ——
@@ -549,9 +543,7 @@ class _UserAuthState extends State<UserAuth>
                                           context: context,
                                           barrierDismissible: true,
                                           builder: (ctx) {
-                                            return _CreateAccountDialog(
-                                              gridOffset: _gridOffset.value,
-                                            );
+                                            return const _CreateAccountDialog();
                                           },
                                         );
                                       },
@@ -810,9 +802,7 @@ class _UserAuthState extends State<UserAuth>
                                               context: context,
                                               barrierDismissible: true,
                                               builder: (ctx) {
-                                                return _CreateAccountDialog(
-                                                  gridOffset: _gridOffset.value,
-                                                );
+                                                return const _CreateAccountDialog();
                                               },
                                             );
                                           },
@@ -850,8 +840,9 @@ class _UserAuthState extends State<UserAuth>
                 ),
               ],
             );
-          },
-        ),
+            },
+          ),
+        ],
       ),
     );
   }
@@ -885,35 +876,6 @@ class _UserAuthState extends State<UserAuth>
   }
 }
 
-/// Subtle grid on blue header (reference look).
-class _GridPatternPainter extends CustomPainter {
-  _GridPatternPainter({required this.offset});
-
-  final double offset;
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final paint =
-        Paint()
-          ..color = Colors.white.withOpacity(0.10)
-          ..strokeWidth = 0.9;
-    const step = 22.0;
-    final shift = (offset * step * 2) % step;
-
-    for (double x = -step; x < size.width + step; x += step) {
-      final dx = x + shift;
-      canvas.drawLine(Offset(dx, 0), Offset(dx, size.height), paint);
-    }
-    for (double y = -step; y < size.height + step; y += step) {
-      final dy = y + shift;
-      canvas.drawLine(Offset(0, dy), Offset(size.width, dy), paint);
-    }
-  }
-
-  @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
-}
-
 /// Clips a rounded rectangle with a semicircular notch at the bottom center
 /// (for the floating action button that sits half in / half out of the card).
 class _NotchedBottomClip extends CustomClipper<Path> {
@@ -942,9 +904,7 @@ class _NotchedBottomClip extends CustomClipper<Path> {
 
 /// Professional "Create Account" form inside a dialog.
 class _CreateAccountDialog extends StatefulWidget {
-  const _CreateAccountDialog({required this.gridOffset});
-
-  final double gridOffset;
+  const _CreateAccountDialog();
 
   @override
   State<_CreateAccountDialog> createState() => _CreateAccountDialogState();

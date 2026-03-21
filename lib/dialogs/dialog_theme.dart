@@ -15,6 +15,136 @@ const Color kFieldBorder = Color(0xFFFED7AA);
 /// Soft dark gray for labels and body text (easier than pure black on light UI).
 const Color kFieldTextColor = Color(0xFF4B5563);
 
+// --- Onboarding / Lottie ---
+
+/// Tints Lottie (and similar vector) saturated colors toward [kPrimaryBlue] while
+/// preserving luminance so whites and light strokes stay readable.
+ColorFilter get kLottieBrandColorFilter =>
+    ColorFilter.mode(kPrimaryBlue, BlendMode.color);
+
+/// Dark onboarding card gradient — matches the page background ([kThemeBg] family).
+Color get kOnboardingCardSurfaceStart =>
+    Color.lerp(kThemeBg, const Color(0xFF5C2410), 0.22)!;
+Color get kOnboardingCardSurfaceMid =>
+    Color.lerp(kThemeBg, kPrimaryBlue, 0.12)!;
+Color get kOnboardingCardSurfaceEnd =>
+    Color.lerp(kThemeBg, kPrimaryBlue, 0.22)!;
+
+/// Title / body copy on dark onboarding cards (inverted vs [kFieldTextColor]).
+const Color kOnboardingOnCardTitle = Color(0xFFF9FAFB);
+Color get kOnboardingOnCardBody => Colors.white.withOpacity(0.78);
+
+/// Small caps / step labels on onboarding (business tone).
+Color get kOnboardingOnCardLabel => kPrimaryBlue.withOpacity(0.92);
+
+/// Full-screen onboarding background — matches [Scaffold] and hero area.
+LinearGradient get kOnboardingScaffoldGradient => LinearGradient(
+      begin: Alignment.topLeft,
+      end: Alignment.bottomRight,
+      colors: [
+        kThemeBg,
+        Color.lerp(kThemeBg, kPrimaryBlue, 0.15)!,
+        kFieldFill,
+      ],
+      stops: const [0.0, 0.45, 1.0],
+    );
+
+// --- Onboarding “pastel card” layout (inherits [kThemeBg] / [kPrimaryBlue] / [kFieldFill]) ---
+
+/// Onboarding card surfaces — blended from app field fills and accent.
+Color get kOnboardingThemedCard1 =>
+    Color.lerp(kFieldFill, Colors.white, 0.28)!;
+Color get kOnboardingThemedCard2 =>
+    Color.lerp(kFieldFill, kFieldBorder, 0.55)!;
+Color get kOnboardingThemedCard3 =>
+    Color.lerp(kFieldFill, kPrimaryBlue, 0.12)!;
+
+/// Title / body on themed onboarding cards (same family as forms).
+Color get kOnboardingLightCardTitle => kFieldTextColor;
+Color get kOnboardingLightCardBody =>
+    kFieldTextColor.withOpacity(0.88);
+
+/// Subtle wave lines on [kThemeBg] / gradient onboarding background.
+class OnboardingWaveBackgroundPainter extends CustomPainter {
+  @override
+  void paint(Canvas canvas, Size size) {
+    final linePaint =
+        Paint()
+          ..color = Color.lerp(kPrimaryBlue, Colors.white, 0.65)!
+              .withOpacity(0.14)
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = 1.1
+          ..strokeCap = StrokeCap.round;
+
+    for (var band = 0; band < 14; band++) {
+      final baseY = size.height * (-0.05 + band * 0.085);
+      final path = Path();
+      const step = 14.0;
+      for (double x = 0; x <= size.width + step; x += step) {
+        final wave =
+            math.sin((x / size.width) * math.pi * 3 + band * 0.7) * 5 +
+            math.sin((x / 72) + band) * 2.5;
+        final y = baseY + wave;
+        if (x == 0) {
+          path.moveTo(x, y);
+        } else {
+          path.lineTo(x, y);
+        }
+      }
+      canvas.drawPath(path, linePaint);
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
+}
+
+/// Same wave lines as [OnboardingWaveBackgroundPainter], with a horizontal /
+/// phase shift for smooth looping animation (e.g. login background).
+class AnimatedOnboardingWaveBackgroundPainter extends CustomPainter {
+  const AnimatedOnboardingWaveBackgroundPainter({required this.phase});
+
+  /// 0.0–1.0; one full cycle of motion.
+  final double phase;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final linePaint =
+        Paint()
+          ..color = Color.lerp(kPrimaryBlue, Colors.white, 0.65)!
+              .withOpacity(0.14)
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = 1.1
+          ..strokeCap = StrokeCap.round;
+
+    final t = phase * math.pi * 2;
+
+    for (var band = 0; band < 14; band++) {
+      final baseY = size.height * (-0.05 + band * 0.085);
+      final path = Path();
+      const step = 14.0;
+      for (double x = 0; x <= size.width + step; x += step) {
+        final wave =
+            math.sin((x / size.width) * math.pi * 3 + band * 0.7 + t * 1.1) *
+                5 +
+            math.sin((x / 72) + band + t * 0.9) * 2.5 +
+            math.sin(t * 0.35 + band * 0.4) * 1.2;
+        final y = baseY + wave;
+        if (x == 0) {
+          path.moveTo(x, y);
+        } else {
+          path.lineTo(x, y);
+        }
+      }
+      canvas.drawPath(path, linePaint);
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant AnimatedOnboardingWaveBackgroundPainter oldDelegate) =>
+      oldDelegate.phase != phase;
+}
+
 /// Resting / floating label for text fields.
 const TextStyle kFieldLabelStyle = TextStyle(
   color: kFieldTextColor,

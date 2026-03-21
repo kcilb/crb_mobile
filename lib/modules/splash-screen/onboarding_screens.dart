@@ -1,222 +1,357 @@
+import 'package:crb_mobile/dialogs/dialog_theme.dart';
 import 'package:flutter/material.dart';
+import 'package:lottie/lottie.dart';
 
-const Color kPrimaryColor = Color(0xFF1976D2);
+// Business-themed Lottie JSONs in `assets/lottie/onboarding_business_*.json`.
 
+/// Pastel card + circular Lottie + copy + dots + Skip / primary CTA (reference layout).
 class OnboardingBase extends StatelessWidget {
-  final String image;
-  final String title;
-  final String description;
-  final VoidCallback? onSkip;
-  final VoidCallback onNext;
-  final String buttonText;
-
   const OnboardingBase({
     super.key,
-    required this.image,
+    required this.lottieAsset,
+    required this.cardColor,
+    required this.activePage,
     required this.title,
     required this.description,
-    this.onSkip,
     required this.onNext,
+    required this.onSkip,
     required this.buttonText,
+    this.showSkip = true,
   });
+
+  final String lottieAsset;
+  final Color cardColor;
+
+  /// Currently visible page from [PageView] (for dot indicators).
+  final int activePage;
+  final String title;
+  final String description;
+  final VoidCallback onNext;
+  final VoidCallback onSkip;
+  final String buttonText;
+  final bool showSkip;
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: Stack(
-        children: [
-          Container(
-            decoration: const BoxDecoration(
-              image: DecorationImage(
-                image: AssetImage('assets/images/background.jpg'),
-                fit: BoxFit.cover,
-              ),
-            ),
-          ),
+    final bottomInset = MediaQuery.paddingOf(context).bottom;
 
-          Positioned.fill(
-            child: Container(
-              decoration: const BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.bottomCenter,
-                  end: Alignment.topCenter,
-                  colors: [Colors.black87, Colors.transparent],
-                  stops: [0.0, 0.5],
-                ),
-              ),
-            ),
+    return Center(
+      child: SingleChildScrollView(
+        physics: const BouncingScrollPhysics(),
+        padding: EdgeInsets.fromLTRB(20, 12, 20, 16 + bottomInset),
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 400),
+          child: _PastelOnboardingCard(
+            lottieAsset: lottieAsset,
+            cardColor: cardColor,
+            activePage: activePage,
+            title: title,
+            description: description,
+            onNext: onNext,
+            onSkip: onSkip,
+            buttonText: buttonText,
+            showSkip: showSkip,
           ),
-
-          // Content
-          SafeArea(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 32.0),
-              child: Column(
-                children: [
-                  const SizedBox(height: 60),
-                  Expanded(
-                    child: Column(
-                      children: [
-                        Container(
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(16.0),
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.black.withOpacity(0.25),
-                                blurRadius: 12,
-                                offset: const Offset(0, 6),
-                              ),
-                            ],
-                          ),
-                          child: ClipRRect(
-                            borderRadius: BorderRadius.circular(16.0),
-                            child: Image.asset(
-                              image,
-                              height: 220,
-                              fit: BoxFit.cover,
-                            ),
-                          ),
-                        ),
-                        const SizedBox(height: 40),
-                        Text(
-                          title,
-                          style: const TextStyle(
-                            fontSize: 26,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.white,
-                            height: 1.4,
-                          ),
-                          textAlign: TextAlign.center,
-                        ),
-                        const SizedBox(height: 24),
-                        Text(
-                          description,
-                          style: TextStyle(
-                            fontSize: 16,
-                            color: Colors.white.withOpacity(0.9),
-                            height: 1.6,
-                          ),
-                          textAlign: TextAlign.center,
-                        ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(height: 40),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      if (onSkip != null)
-                        TextButton(
-                          onPressed: onSkip,
-                          child: Text(
-                            'Skip',
-                            style: TextStyle(
-                              fontSize: 16,
-                              color: Colors.white.withOpacity(0.85),
-                              fontWeight: FontWeight.w500,
-                            ),
-                          ),
-                        )
-                      else
-                        const SizedBox(width: 64),
-                      ElevatedButton(
-                        onPressed: onNext,
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: kPrimaryColor,
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 32,
-                            vertical: 16,
-                          ),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                        ),
-                        child: Text(
-                          buttonText,
-                          style: const TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w600,
-                            color: Colors.white,
-                            letterSpacing: 0.5,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 32),
-                ],
-              ),
-            ),
-          ),
-        ],
+        ),
       ),
     );
   }
 }
 
-// Screens
-class OnboardingScreen1 extends StatelessWidget {
-  final VoidCallback onSkip;
-  final VoidCallback onNext;
+class _PastelOnboardingCard extends StatelessWidget {
+  const _PastelOnboardingCard({
+    required this.lottieAsset,
+    required this.cardColor,
+    required this.activePage,
+    required this.title,
+    required this.description,
+    required this.onNext,
+    required this.onSkip,
+    required this.buttonText,
+    required this.showSkip,
+  });
 
+  final String lottieAsset;
+  final Color cardColor;
+  final int activePage;
+  final String title;
+  final String description;
+  final VoidCallback onNext;
+  final VoidCallback onSkip;
+  final String buttonText;
+  final bool showSkip;
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: Colors.transparent,
+      child: Container(
+        width: double.infinity,
+        decoration: BoxDecoration(
+          color: cardColor,
+          borderRadius: BorderRadius.circular(28),
+          boxShadow: [
+            BoxShadow(
+              color: kThemeBg.withOpacity(0.35),
+              blurRadius: 28,
+              offset: const Offset(0, 16),
+              spreadRadius: -4,
+            ),
+            BoxShadow(
+              color: kPrimaryBlue.withOpacity(0.12),
+              blurRadius: 24,
+              offset: const Offset(0, 10),
+            ),
+          ],
+        ),
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(22, 28, 22, 22),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // Circular Lottie (faint ring like reference)
+              Hero(
+                tag: lottieAsset,
+                child: Material(
+                  color: Colors.transparent,
+                  child: _CircularLottieFrame(lottieAsset: lottieAsset),
+                ),
+              ),
+              const SizedBox(height: 28),
+              Text(
+                title,
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 22,
+                  fontWeight: FontWeight.w800,
+                  letterSpacing: -0.35,
+                  height: 1.25,
+                  color: kOnboardingLightCardTitle,
+                ),
+              ),
+              const SizedBox(height: 12),
+              Text(
+                description,
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 15,
+                  height: 1.55,
+                  fontWeight: FontWeight.w500,
+                  color: kOnboardingLightCardBody,
+                ),
+              ),
+              const SizedBox(height: 22),
+              // Page dots
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: List.generate(3, (index) {
+                  final active = activePage == index;
+                  return AnimatedContainer(
+                    duration: const Duration(milliseconds: 280),
+                    curve: Curves.easeOutCubic,
+                    margin: const EdgeInsets.symmetric(horizontal: 4),
+                    height: 7,
+                    width: active ? 22 : 7,
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(999),
+                      color:
+                          active
+                              ? kPrimaryBlue
+                              : kPrimaryBlue.withOpacity(0.22),
+                    ),
+                  );
+                }),
+              ),
+              const SizedBox(height: 22),
+              // Skip + pill CTA
+              Row(
+                children: [
+                  if (showSkip)
+                    TextButton(
+                      onPressed: onSkip,
+                      style: TextButton.styleFrom(
+                        foregroundColor: kFieldTextColor.withOpacity(0.82),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 10,
+                        ),
+                      ),
+                      child: const Text(
+                        'SKIP',
+                        style: TextStyle(
+                          fontWeight: FontWeight.w700,
+                          fontSize: 14,
+                          letterSpacing: 0.8,
+                        ),
+                      ),
+                    )
+                  else
+                    const SizedBox(width: 56),
+                  Expanded(
+                    child: Align(
+                      alignment: Alignment.centerRight,
+                      child: FilledButton(
+                        onPressed: onNext,
+                        style: FilledButton.styleFrom(
+                          backgroundColor: const Color(0xFF111111),
+                          foregroundColor: Colors.white,
+                          elevation: 0,
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 28,
+                            vertical: 14,
+                          ),
+                          minimumSize: const Size(0, 48),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(999),
+                          ),
+                          textStyle: const TextStyle(
+                            fontSize: 15,
+                            fontWeight: FontWeight.w700,
+                            letterSpacing: 0.2,
+                          ),
+                        ),
+                        child: Text(buttonText.toUpperCase()),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// Lottie inside a soft circular frame (reference: illustration in a circle).
+class _CircularLottieFrame extends StatelessWidget {
+  const _CircularLottieFrame({required this.lottieAsset});
+
+  final String lottieAsset;
+
+  @override
+  Widget build(BuildContext context) {
+    const size = 220.0;
+    return Container(
+      width: size,
+      height: size,
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        color: Color.lerp(kFieldFill, Colors.white, 0.4),
+        border: Border.all(color: kFieldBorder.withOpacity(0.85), width: 1.4),
+        boxShadow: [
+          BoxShadow(
+            color: kPrimaryBlue.withOpacity(0.10),
+            blurRadius: 20,
+            offset: const Offset(0, 8),
+          ),
+        ],
+      ),
+      child: ClipOval(
+        child: Padding(
+          padding: const EdgeInsets.all(12),
+          child: ColorFiltered(
+            colorFilter: kLottieBrandColorFilter,
+            child: Lottie.asset(
+              lottieAsset,
+              fit: BoxFit.contain,
+              alignment: Alignment.center,
+              repeat: true,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class OnboardingScreen1 extends StatelessWidget {
   const OnboardingScreen1({
     super.key,
-    required this.onSkip,
     required this.onNext,
+    required this.onSkip,
+    required this.activePage,
   });
+
+  final VoidCallback onNext;
+  final VoidCallback onSkip;
+  final int activePage;
 
   @override
   Widget build(BuildContext context) {
     return OnboardingBase(
-      image: 'assets/images/financial_dashboard.jpeg',
-      title: 'Your Financial Health Dashboard',
+      lottieAsset: 'assets/lottie/onboarding_business_1.json',
+      cardColor: kOnboardingThemedCard1,
+      activePage: activePage,
+      title: 'A clear view of your credit profile',
       description:
-          'Monitor your credit score and get real-time alerts about important changes to your financial profile.',
-      onSkip: onSkip,
+          'Bring your bureau and account signals into one business-grade dashboard. '
+          'Monitor score drivers and exposure in real time.',
       onNext: onNext,
-      buttonText: 'Continue',
+      onSkip: onSkip,
+      buttonText: 'Next',
+      showSkip: true,
     );
   }
 }
 
 class OnboardingScreen2 extends StatelessWidget {
-  final VoidCallback onSkip;
-  final VoidCallback onNext;
-
   const OnboardingScreen2({
     super.key,
-    required this.onSkip,
     required this.onNext,
+    required this.onSkip,
+    required this.activePage,
   });
+
+  final VoidCallback onNext;
+  final VoidCallback onSkip;
+  final int activePage;
 
   @override
   Widget build(BuildContext context) {
     return OnboardingBase(
-      image: 'assets/images/experts.jpeg',
-      title: 'Backed by Financial Experts',
+      lottieAsset: 'assets/lottie/onboarding_business_2.json',
+      cardColor: kOnboardingThemedCard2,
+      activePage: activePage,
+      title: 'Actionable intelligence for decisions',
       description:
-          'Our proprietary algorithms, designed by financial experts, provide you with accurate credit insights and recommendations.',
-      onSkip: onSkip,
+          'See what moved your profile, which factors weigh most, and recommended '
+          'actions your team can track.',
       onNext: onNext,
+      onSkip: onSkip,
       buttonText: 'Next',
+      showSkip: true,
     );
   }
 }
 
 class OnboardingScreen3 extends StatelessWidget {
-  final VoidCallback onGetStarted;
+  const OnboardingScreen3({
+    super.key,
+    required this.onGetStarted,
+    required this.onSkip,
+    required this.activePage,
+  });
 
-  const OnboardingScreen3({super.key, required this.onGetStarted});
+  final VoidCallback onGetStarted;
+  final VoidCallback onSkip;
+  final int activePage;
 
   @override
   Widget build(BuildContext context) {
     return OnboardingBase(
-      image: 'assets/images/financial_sharing.jpg',
-      title: 'Share Financial Insights',
+      lottieAsset: 'assets/lottie/onboarding_business_3.json',
+      cardColor: kOnboardingThemedCard3,
+      activePage: activePage,
+      title: 'Controlled sharing with your circle',
       description:
-          'Securely share your credit progress with trusted advisors or family members to get better financial advice and support.',
+          'Invite colleagues or advisors with granular, revocable access when you '
+          'need alignment—activity stays auditable.',
       onNext: onGetStarted,
-      buttonText: 'Get Started',
+      onSkip: onSkip,
+      buttonText: 'Start',
+      showSkip: true,
     );
   }
 }
