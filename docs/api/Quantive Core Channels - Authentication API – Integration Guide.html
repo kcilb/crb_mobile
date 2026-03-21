@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<!-- saved from url=(0093)file:///D:/Projects/personal/crb_mobile/docs/api/Authentication-API.html#3-payload-encryption -->
+<html lang="en"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Quantive Core Channels - Authentication API – Integration Guide</title>
+  <style>
+    * { box-sizing: border-box; }
+    body { font-family: 'Segoe UI', Calibri, sans-serif; line-height: 1.5; color: #212529; max-width: 900px; margin: 0 auto; padding: 24px; }
+    .doc-header { background: #1e3a5f; color: white; padding: 28px 32px; border-radius: 8px; margin-bottom: 28px; text-align: left; }
+    .doc-header h1 { margin: 0 0 16px 0; font-size: 1.5em; font-weight: bold; }
+    .doc-header .meta { margin: 0; font-size: 0.95em; font-weight: normal; }
+    h2 { font-size: 1.25em; margin-top: 28px; margin-bottom: 12px; color: #1e3a5f; border-bottom: 1px solid #dee2e6; padding-bottom: 6px; }
+    h3 { font-size: 1.1em; margin-top: 20px; margin-bottom: 8px; }
+    h4 { font-size: 1em; margin-top: 16px; margin-bottom: 6px; }
+    p { margin: 8px 0; }
+    ul { margin: 8px 0; padding-left: 24px; }
+    li { margin: 4px 0; }
+    table { border-collapse: collapse; width: 100%; margin: 14px 0; font-size: 0.95em; }
+    th, td { border: 1px solid #dee2e6; padding: 10px 14px; text-align: left; vertical-align: top; }
+    th { background: #1e3a5f; color: #fff; font-weight: 600; }
+    tbody td { background: #fff; color: #212529; }
+    tbody tr:nth-child(odd) td:first-child { background: #f0f2f5; }
+    tbody tr:nth-child(even) td:first-child { background: #fff; }
+    pre { background: #f6f8fa; border: 1px solid #dee2e6; border-radius: 4px; padding: 14px; overflow-x: auto; font-size: 0.9em; }
+    code { background: #f0f2f5; padding: 2px 6px; border-radius: 3px; font-size: 0.9em; }
+    pre code { background: none; padding: 0; }
+    hr { border: none; border-top: 1px solid #dee2e6; margin: 20px 0; }
+    .toc { margin: 16px 0; }
+    .toc a { color: #1e3a5f; text-decoration: none; }
+    .toc a:hover { text-decoration: underline; }
+    .note { background: #f8f9fa; border-left: 4px solid #1e3a5f; padding: 12px 16px; margin: 14px 0; font-size: 0.95em; }
+    .important-box { background: #fff5f5; border-left: 4px solid #c53030; padding: 14px 18px; margin: 14px 0; }
+    .important-box ul { margin: 10px 0 0 0; padding-left: 20px; }
+    .important-box li { margin: 6px 0; }
+    .warning-note { background: #fffbea; border-left: 4px solid #b8860b; padding: 12px 16px; margin: 14px 0; font-size: 0.95em; }
+    footer { margin-top: 32px; padding-top: 16px; border-top: 1px solid #dee2e6; font-size: 0.9em; color: #555; text-align: center; }
+    @media print {
+      body { padding: 16px; }
+      th { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+      tbody tr:nth-child(odd) td:first-child { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+      .doc-header { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="doc-header">
+    <h1>Quantive Core - Channel Authentication API(s) – Integration Guide</h1>
+    <p class="meta">Version: 1.0<br>Last Updated: March 2026<br>Audience: Third-Party Integrators</p>
+  </div>
+
+  <h2>Table of Contents</h2>
+  <div class="toc">
+    1. <a href="file:///D:/Projects/personal/crb_mobile/docs/api/Authentication-API.html#1-overview">Overview</a><br>
+    2. <a href="file:///D:/Projects/personal/crb_mobile/docs/api/Authentication-API.html#2-endpoints">Endpoints</a><br>
+    &nbsp;&nbsp;&nbsp;&nbsp;2.1 <a href="file:///D:/Projects/personal/crb_mobile/docs/api/Authentication-API.html#21-generate-bearer-token">Generate Bearer Token</a><br>
+    3. <a href="file:///D:/Projects/personal/crb_mobile/docs/api/Authentication-API.html#3-payload-encryption">Payload Encryption</a><br>
+    &nbsp;&nbsp;&nbsp;&nbsp;3.5 <a href="file:///D:/Projects/personal/crb_mobile/docs/api/Authentication-API.html#35-code-examples">Code Examples</a><br>
+    4. <a href="file:///D:/Projects/personal/crb_mobile/docs/api/Authentication-API.html#4-extract-aes-key">Extract AES Key from JWT Token</a><br>
+    5. <a href="file:///D:/Projects/personal/crb_mobile/docs/api/Authentication-API.html#5-prepare-payload">Prepare Request Payload</a><br>
+    6. <a href="file:///D:/Projects/personal/crb_mobile/docs/api/Authentication-API.html#6-encrypt-payload">Encrypt the Payload</a><br>
+    7. <a href="file:///D:/Projects/personal/crb_mobile/docs/api/Authentication-API.html#7-send-encrypted-request">Send Encrypted Request</a><br>
+    8. <a href="file:///D:/Projects/personal/crb_mobile/docs/api/Authentication-API.html#8-decrypt-response">Decrypt the Response</a><br>
+    9. <a href="file:///D:/Projects/personal/crb_mobile/docs/api/Authentication-API.html#9-response-codes">Response Codes</a>
+  </div>
+
+  <hr>
+
+  <h2 id="1-overview">1. Overview</h2>
+  <p>How to obtain a <strong>Bearer Token</strong> (JWT) for channel APIs. The token authenticates requests and is
+    used to encrypt/decrypt payloads for the secured channel endpoints listed in
+    <a href="file:///D:/Projects/personal/crb_mobile/docs/api/Authentication-API.html#3-payload-encryption">Section 3 – Payload Encryption</a>.</p>
+  <p>All requests/responses are <strong>JSON</strong> over <strong>HTTPS</strong>. Send the token in
+    <code>Authorization: Bearer &lt;token&gt;</code> for all protected requests.</p>
+
+  <hr>
+
+  <h2 id="2-endpoints">2. Endpoints</h2>
+
+  <h3 id="21-generate-bearer-token">2.1 Generate Bearer Token</h3>
+  <p>Generates a JSON Web Token (JWT) for authenticating and for encrypting/decrypting the payload of the endpoints
+    listed in <a href="file:///D:/Projects/personal/crb_mobile/docs/api/Authentication-API.html#3-payload-encryption">Payload Encryption</a>.</p>
+  <table>
+    <thead><tr><th>Property</th><th>Value</th></tr></thead>
+    <tbody>
+      <tr><td><strong>Method</strong></td><td><code>POST</code></td></tr>
+      <tr><td><strong>Route</strong></td><td><code>api/v1/authentication/generateBearerToken</code></td></tr>
+      <tr><td><strong>Note</strong></td><td>Fixed authentication segment: <code>authentication</code>.</td></tr>
+      <tr><td><strong>Auth</strong></td><td>None</td></tr>
+    </tbody>
+  </table>
+
+  <h4>Request Headers</h4>
+  <table>
+    <thead><tr><th>Header</th><th>Required</th><th>Description</th></tr></thead>
+    <tbody>
+      <tr><td><strong>Content-Type</strong></td><td>Yes</td><td><code>application/json</code></td></tr>
+      <tr><td><strong>client-id</strong></td><td>Yes</td><td>Client identifier (provided to the integrator)</td></tr>
+      <tr><td><strong>client-secret</strong></td><td>Yes</td><td>Client secret (provided to the integrator)</td></tr>
+    </tbody>
+  </table>
+
+  <h4>Request Body</h4>
+  <table>
+    <thead><tr><th>Field</th><th>Type</th><th>Required</th><th>Description</th></tr></thead>
+    <tbody>
+      <tr><td><strong>institutionId</strong></td><td>number</td><td>Yes</td><td>Institution identifier</td></tr>
+      <tr><td><strong>channelId</strong></td><td>number</td><td>Yes</td><td>Channel identifier</td></tr>
+    </tbody>
+  </table>
+
+  <h4>Request</h4>
+  <pre><code>{
+  "institutionId": 9,
+  "channelId": 12
+}</code></pre>
+
+  <h4>Response (success) – token response payload</h4>
+  <table>
+    <thead><tr><th>Field</th><th>Type</th><th>Description</th></tr></thead>
+    <tbody>
+      <tr><td><strong>bearerToken</strong></td><td>string</td><td>JWT for <code>Authorization: Bearer &lt;token&gt;</code></td></tr>
+      <tr><td><strong>expiry</strong></td><td>number</td><td>Token validity duration in minutes</td></tr>
+    </tbody>
+  </table>
+
+  <h4>Response</h4>
+  <pre><code>{
+  "bearerToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+  "expiry": 30
+}</code></pre>
+
+  <hr>
+
+  <h2 id="3-payload-encryption">3. Payload Encryption</h2>
+  <div class="important-box">
+    <strong>Important:</strong> The following endpoints require encrypted payloads for security:
+    <ul>
+      <li><code>POST /api/v1/xapi-service/fundsTransfer</code></li>
+      <li><code>POST /api/v1/xapi-service/postBillPayment</code></li>
+      <li><code>POST /api/v1/xapi-service/processBillValidation</code></li>
+      <li><code>POST /api/v1/xapi-service/processInterbankTransfer</code></li>
+      <li><code>POST /api/v1/xapi-card-service/withdraw</code></li>
+    </ul>
+  </div>
+
+  <h2 id="35-code-examples">3.5 Code Examples</h2>
+  <h3>C# Encryption Example</h3>
+  <pre><code>using System;
+using System.IO;
+using System.Security.Cryptography;
+using System.Text;
+using System.Text.Json;
+using System.IdentityModel.Tokens.Jwt;
+
+public class EncryptionHelper
+{
+    private static readonly byte[] IV = Encoding.UTF8.GetBytes("1234567890123456");
+    
+    /// &lt;summary&gt;
+    /// Extracts the AES key from a JWT bearer token
+    /// &lt;/summary&gt;
+    public static byte[] ExtractAesKeyFromToken(string bearerToken)
+    {
+        var handler = new JwtSecurityTokenHandler();
+        var jwtToken = handler.ReadJwtToken(bearerToken);
+        
+        // Extract CHash claim (contains Base64-encoded AES key)
+        var chashClaim = jwtToken.Claims.FirstOrDefault(c =&gt; c.Type == "chash");
+        if (chashClaim == null)
+            throw new Exception("AES key not found in token");
+        
+        // Decode Base64 to get 32-byte key
+        return Convert.FromBase64String(chashClaim.Value);
+    }
+    
+    /// &lt;summary&gt;
+    /// Encrypts a JSON string using AES-256-CBC
+    /// &lt;/summary&gt;
+    public static string EncryptPayload(string plainText, byte[] key)
+    {
+        using var aes = Aes.Create();
+        aes.Key = key;
+        aes.IV = IV;
+        aes.Mode = CipherMode.CBC;
+        aes.Padding = PaddingMode.PKCS7;
+        
+        using var encryptor = aes.CreateEncryptor();
+        using var ms = new MemoryStream();
+        using (var cs = new CryptoStream(ms, encryptor, CryptoStreamMode.Write))
+        using (var sw = new StreamWriter(cs, Encoding.UTF8))
+        {
+            sw.Write(plainText);
+        }
+        
+        return Convert.ToBase64String(ms.ToArray());
+    }
+    
+    /// &lt;summary&gt;
+    /// Decrypts a Base64-encoded encrypted string
+    /// &lt;/summary&gt;
+    public static string DecryptPayload(string encryptedBase64, byte[] key)
+    {
+        var encryptedBytes = Convert.FromBase64String(encryptedBase64);
+        
+        using var aes = Aes.Create();
+        aes.Key = key;
+        aes.IV = IV;
+        aes.Mode = CipherMode.CBC;
+        aes.Padding = PaddingMode.PKCS7;
+        
+        using var decryptor = aes.CreateDecryptor();
+        using var ms = new MemoryStream(encryptedBytes);
+        using var cs = new CryptoStream(ms, decryptor, CryptoStreamMode.Read);
+        using var sr = new StreamReader(cs, Encoding.UTF8);
+        
+        return sr.ReadToEnd();
+    }
+}
+
+// Usage Example
+public class FundsTransferClient
+{
+    private string _bearerToken;
+    private byte[] _aesKey;
+    
+    public async Task&lt;string&gt; AuthenticateAsync(string clientId, string clientSecret, int institutionId)
+    {
+        // Step 1: Get bearer token
+        var tokenResponse = await GetBearerTokenAsync(clientId, clientSecret, institutionId);
+        _bearerToken = tokenResponse.bearerToken;
+        
+        // Step 2: Extract AES key from token
+        _aesKey = EncryptionHelper.ExtractAesKeyFromToken(_bearerToken);
+        
+        return _bearerToken;
+    }
+    
+    public async Task&lt;FundsTransferResponse&gt; TransferFundsAsync(FundsTransferRequest request)
+    {
+        // Step 3: Serialize request to JSON
+        var jsonRequest = JsonSerializer.Serialize(request);
+        
+        // Step 4: Encrypt the JSON
+        var encryptedData = EncryptionHelper.EncryptPayload(jsonRequest, _aesKey);
+        
+        // Step 5: Create encrypted payload
+        var encryptedPayload = new { data = encryptedData };
+        
+        // Step 6: Send request
+        var response = await HttpClient.PostAsync(
+            "/api/v1/xapi-service/fundsTransfer",
+            new StringContent(JsonSerializer.Serialize(encryptedPayload), 
+                Encoding.UTF8, "application/json"),
+            headers: new Dictionary&lt;string, string&gt;
+            {
+                { "Authorization", $"Bearer {_bearerToken}" }
+            });
+        
+        var responseJson = await response.Content.ReadAsStringAsync();
+        var encryptedResponse = JsonSerializer.Deserialize&lt;EncryptedPayload&gt;(responseJson);
+        
+        // Step 7: Decrypt response
+        var decryptedJson = EncryptionHelper.DecryptPayload(encryptedResponse.data, _aesKey);
+        return JsonSerializer.Deserialize&lt;FundsTransferResponse&gt;(decryptedJson);
+    }
+}</code></pre>
+
+  <hr>
+
+  <h2 id="4-extract-aes-key">4. Extract AES Key from JWT Token</h2>
+  <p>The JWT bearer token contains the AES encryption key in the <code>Chash</code> claim. You need to:</p>
+  <ol>
+    <li>Decode the JWT token (without verification for key extraction)</li>
+    <li>Extract the <code>Chash</code> claim value</li>
+    <li>Decode the Base64 string to get the 32-byte AES key</li>
+  </ol>
+  <div class="warning-note">
+    <strong>Note:</strong> The <code>CHash</code> claim contains a Base64-encoded 256-bit AES key. This key is unique for each bearer token and should be used for all encrypted requests during the token's validity period.
+  </div>
+
+  <hr>
+
+  <h2 id="5-prepare-payload">5. Prepare Request Payload</h2>
+  <p>Create your JSON request object as you would for a non-encrypted endpoint. The following example shows a typical structure for a fund transfer request; you will encrypt this entire payload in the next step.</p>
+  <h4>Example (fund transfer)</h4>
+  <pre><code>{
+  "institutionId": 9,
+  "channelId": 5,
+  "data": [
+    {
+      "drAcctNo": "1011000001",
+      "drAcctType": "SAV",
+      "crAcctNo": "1011000002",
+      "crAcctType": "SAV",
+      "amount": 10000.00,
+      "crncyCode": "UGX",
+      "tranCode": "FT",
+      "description": "Fund Transfer",
+      "transactionReference": "REF-001"
+    }
+  ]
+}</code></pre>
+
+  <hr>
+
+  <h2 id="6-encrypt-payload">6. Encrypt the Payload</h2>
+  <p>Encrypt the JSON string (e.g. the payload from <a href="file:///D:/Projects/personal/crb_mobile/docs/api/Authentication-API.html#5-prepare-payload">Prepare Request Payload</a>) using <strong>AES-256-CBC</strong> with the extracted key:</p>
+  <ol>
+    <li>Convert the JSON payload to UTF-8 bytes.</li>
+    <li>Use AES-256-CBC encryption with <strong>PKCS7</strong> padding.</li>
+    <li>Use a fixed <strong>Initialization Vector (IV):</strong> <code>1234567890123456</code> (16 bytes).</li>
+    <li>Encode the encrypted bytes to <strong>Base64</strong>.</li>
+  </ol>
+
+  <hr>
+
+  <h2 id="7-send-encrypted-request">7. Send Encrypted Request</h2>
+  <p>Wrap the encrypted Base64 string in an <code>EncryptedPayload</code> object and send it with the required headers.</p>
+  <p><strong>Payload format:</strong> A JSON object with a single key <code>data</code> whose value is the Base64-encoded encrypted payload.</p>
+
+  <h4>Request headers</h4>
+  <table>
+    <thead><tr><th>Header</th><th>Value</th></tr></thead>
+    <tbody>
+      <tr><td><strong>Authorization</strong></td><td><code>Bearer {your-bearer-token}</code></td></tr>
+      <tr><td><strong>Content-Type</strong></td><td><code>application/json</code></td></tr>
+    </tbody>
+  </table>
+
+  <h4>Request body example</h4>
+  <pre><code>{
+  "data": "U2FsdGVkX1+3x4y5z6a7b8c9d0e1f2g3h415j6k718m9n0o1p2q3r4s5t6u7v8w9x0y1z2..."
+}</code></pre>
+
+  <hr>
+
+  <h2 id="8-decrypt-response">8. Decrypt the Response</h2>
+  <p>The server response is also encrypted. The response body is a JSON object with a <code>data</code> field containing a Base64-encoded string. Decode from Base64, then decrypt using the same AES-256-CBC key and IV (<code>1234567890123456</code>) to obtain the plain JSON.</p>
+  <h4>Encrypted response body example</h4>
+  <pre><code>{
+  "data": "U2FsdGVkX1+9x8y7z6a5b4c3d2e1f0g9h817j6k514m3n2o1p0q9r8s7t6u5v4w3x2y1z0..."
+}</code></pre>
+  <p>Decrypt the <code>data</code> field using the same AES key and IV to get the JSON response:</p>
+  <h4>Decrypted response example</h4>
+  <pre><code>{
+  "responseCode": "0",
+  "responseMessage": "Transfer successful",
+  "data": {
+    "transactionId": 12345
+  }
+}</code></pre>
+
+  <hr>
+
+  <h2 id="9-response-codes">9. Response Codes</h2>
+  <p>
+    Application-level response codes used by the Authentication API. These are aligned with the Card Integration API response codes.
+  </p>
+  <table>
+    <thead><tr><th>Code</th><th>Description</th></tr></thead>
+    <tbody>
+      <tr><td><strong>0</strong></td><td>Success</td></tr>
+      <tr><td><strong>400</strong></td><td>Bad Request — Invalid or malformed request payload</td></tr>
+      <tr><td><strong>401</strong></td><td>Unauthorized — Missing or invalid authentication</td></tr>
+      <tr><td><strong>403</strong></td><td>Forbidden — Access not allowed for this resource</td></tr>
+      <tr><td><strong>404</strong></td><td>Not Found — Resource or endpoint not found</td></tr>
+      <tr><td><strong>422</strong></td><td>Unprocessable Entity — Validation error (e.g. invalid input)</td></tr>
+      <tr><td><strong>500</strong></td><td>Internal Server Error — Server-side error; retry or contact support</td></tr>
+      <tr><td><strong>-98</strong></td><td>Validation error — Required field missing or invalid</td></tr>
+      <tr><td><strong>-99</strong></td><td>Business / general error — See <code>responseMessage</code> for details</td></tr>
+    </tbody>
+  </table>
+
+  <footer>
+    <strong>Document Version:</strong> 1.0<br>
+    <strong>Last Updated:</strong> March 2026<br>
+    <strong>Maintained By:</strong> Quantive Core Development Team
+  </footer>
+
+
+
+</body></html>

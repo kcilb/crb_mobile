@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Quantive Core – Member Deposit Notification API(s) – Integration Guide</title>
+  <style>
+    * { box-sizing: border-box; }
+    body { font-family: 'Segoe UI', Calibri, sans-serif; line-height: 1.5; color: #212529; max-width: 900px; margin: 0 auto; padding: 24px; }
+    .doc-header { background: #1e3a5f; color: white; padding: 28px 32px; border-radius: 8px; margin-bottom: 28px; text-align: left; }
+    .doc-header h1 { margin: 0 0 16px 0; font-size: 1.5em; font-weight: bold; }
+    .doc-header .meta { margin: 0; font-size: 0.95em; font-weight: normal; }
+    h2 { font-size: 1.25em; margin-top: 28px; margin-bottom: 12px; color: #1e3a5f; border-bottom: 1px solid #dee2e6; padding-bottom: 6px; }
+    h3 { font-size: 1.1em; margin-top: 20px; margin-bottom: 8px; }
+    h4 { font-size: 1em; margin-top: 16px; margin-bottom: 6px; }
+    p { margin: 8px 0; }
+    ul { margin: 8px 0; padding-left: 24px; }
+    li { margin: 4px 0; }
+    table { border-collapse: collapse; width: 100%; margin: 14px 0; font-size: 0.95em; }
+    th, td { border: 1px solid #dee2e6; padding: 10px 14px; text-align: left; vertical-align: top; }
+    th { background: #1e3a5f; color: #fff; font-weight: 600; }
+    tbody td { background: #fff; color: #212529; }
+    tbody tr:nth-child(odd) td:first-child { background: #f0f2f5; }
+    tbody tr:nth-child(even) td:first-child { background: #fff; }
+    pre { background: #f6f8fa; border: 1px solid #dee2e6; border-radius: 4px; padding: 14px; overflow-x: auto; font-size: 0.9em; }
+    code { background: #f0f2f5; padding: 2px 6px; border-radius: 3px; font-size: 0.9em; }
+    pre code { background: none; padding: 0; }
+    hr { border: none; border-top: 1px solid #dee2e6; margin: 20px 0; }
+    .toc { margin: 16px 0; }
+    .toc a { color: #1e3a5f; text-decoration: none; }
+    .toc a:hover { text-decoration: underline; }
+    .note { background: #f8f9fa; border-left: 4px solid #1e3a5f; padding: 12px 16px; margin: 14px 0; font-size: 0.95em; }
+    .warning-note { background: #fffbea; border-left: 4px solid #b8860b; padding: 12px 16px; margin: 14px 0; font-size: 0.95em; }
+    footer { margin-top: 32px; padding-top: 16px; border-top: 1px solid #dee2e6; font-size: 0.9em; color: #555; text-align: center; }
+    @media print {
+      body { padding: 16px; }
+      th { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+      tbody tr:nth-child(odd) td:first-child { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+      .doc-header { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="doc-header">
+    <h1>Quantive Core – Member Deposit Notification API(s) – Integration Guide</h1>
+    <p class="meta">Version: 1.0<br>Last Updated: March 2026<br>Audience: Third-Party Integrators</p>
+  </div>
+
+  <h2>Table of Contents</h2>
+  <div class="toc">
+    1. <a href="#1-overview">Overview</a><br>
+    2. <a href="#2-base-url">Base URL and Environment</a><br>
+    3. <a href="#3-jwt-auth">JWT Authentication</a><br>
+    &nbsp;&nbsp;&nbsp;&nbsp;3.1 <a href="#31-request-token">Request for token (payload)</a><br>
+    &nbsp;&nbsp;&nbsp;&nbsp;3.2 <a href="#32-using-token">Using the token</a><br>
+    &nbsp;&nbsp;&nbsp;&nbsp;3.3 <a href="#33-response">Response</a><br>
+    4. <a href="#4-format">Request and Response Format</a><br>
+    5. <a href="#5-endpoints">API Endpoints</a><br>
+    &nbsp;&nbsp;&nbsp;&nbsp;5.1 <a href="#51-member-verification">Member Verification</a><br>
+    &nbsp;&nbsp;&nbsp;&nbsp;5.2 <a href="#52-deposit-notification">Deposit Notification</a><br>
+    6. <a href="#6-response-codes">Response Codes</a><br>
+    7. <a href="#7-error-handling">Error Handling</a>
+  </div>
+
+  <hr>
+
+  <h2 id="1-overview">1. Overview</h2>
+  <p>
+    REST API for <strong>member verification</strong> and <strong>deposit notification</strong>. Channels and partners send requests to Quantive Core (QCore)
+    to verify members by account number or to notify QCore of deposits. Use the API to:
+  </p>
+  <ul>
+    <li>Confirm an account exists</li>
+    <li>Retrieve member name, account status, and currency</li>
+    <li>Send a deposit notification for posting to a member account</li>
+  </ul>
+  <p>
+    All requests/responses use <strong>JSON over HTTPS</strong>. Send the bearer token obtained from the Authentication API in the
+    <code>Authorization: Bearer &lt;token&gt;</code> header for all protected endpoints.
+  </p>
+
+  <hr>
+
+  <h2 id="2-base-url">2. Base URL and Environment</h2>
+  <p>Use the base URL for your environment as provided in your integration agreement.</p>
+  <table>
+    <thead><tr><th>Environment</th><th>Base URL</th></tr></thead>
+    <tbody>
+      <tr><td><strong>Production</strong></td><td><code>https://api.your-sacco.com</code></td></tr>
+      <tr><td><strong>Staging</strong></td><td><code>https://staging-api.your-sacco.com</code></td></tr>
+    </tbody>
+  </table>
+
+  <hr>
+
+  <h2 id="3-jwt-auth">3. JWT Authentication</h2>
+  <p>
+    This API uses <strong>JWT (JSON Web Token)</strong> for authentication. Obtain a bearer token from the Authentication API and use it
+    for all subsequent requests to protected endpoints (e.g. <code>verifyMember</code>, <code>receiveDepositNotification</code>).
+  </p>
+
+  <h3 id="31-request-token">3.1 Request for token (payload)</h3>
+  <p>Obtain a bearer token before calling any protected endpoint.</p>
+  <table>
+    <thead><tr><th>Property</th><th>Value</th></tr></thead>
+    <tbody>
+      <tr><td><strong>Endpoint</strong></td><td><code>POST /api/v1/third-party-authentication/generateToken</code></td></tr>
+      <tr><td><strong>Note</strong></td><td>Dedicated third-party authentication route.</td></tr>
+    </tbody>
+  </table>
+
+  <h4>Request Headers</h4>
+  <table>
+    <thead><tr><th>Header</th><th>Required</th><th>Description</th></tr></thead>
+    <tbody>
+      <tr><td><strong>Content-Type</strong></td><td>Yes</td><td><code>application/json</code></td></tr>
+    </tbody>
+  </table>
+
+  <h4>Request Body</h4>
+  <table>
+    <thead><tr><th>Field</th><th>Type</th><th>Required</th><th>Description</th></tr></thead>
+    <tbody>
+      <tr><td><strong>username</strong></td><td>string</td><td>Yes</td><td>Authentication username</td></tr>
+      <tr><td><strong>password</strong></td><td>string</td><td>Yes</td><td>Authentication password</td></tr>
+    </tbody>
+  </table>
+
+  <h4>Request (get token)</h4>
+  <pre><code>{
+  "username": "your-username",
+  "password": "your-password"
+}</code></pre>
+
+  <h4>Response (success) – token response payload</h4>
+  <table>
+    <thead><tr><th>Field</th><th>Type</th><th>Description</th></tr></thead>
+    <tbody>
+      <tr><td><strong>token</strong></td><td>string</td><td>JWT to use in <code>Authorization: Bearer &lt;token&gt;</code> for all subsequent requests</td></tr>
+      <tr><td><strong>expiry</strong></td><td>number</td><td>Token validity duration in minutes</td></tr>
+    </tbody>
+  </table>
+
+  <h4>Response (get token)</h4>
+  <pre><code>{
+  "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+  "expiry": 30
+}</code></pre>
+
+  <h3 id="32-using-token">3.2 Using the token</h3>
+  <p>
+    For all subsequent requests to protected endpoints, send the token in the <code>Authorization</code> header and specify
+    <code>Content-Type: application/json</code>.
+  </p>
+  <pre><code>Authorization: Bearer &lt;token&gt;
+Content-Type: application/json</code></pre>
+  <p>
+    The request body depends on the endpoint:
+  </p>
+  <ul>
+    <li>For <code>verifyMember</code>: <code>requestId</code> and <code>memberAccount</code> only (see 5.1)</li>
+    <li>For <code>receiveDepositNotification</code>: see 5.2 for full payload</li>
+  </ul>
+  <p>Do not send username/password in these protected requests.</p>
+
+  <h3 id="33-response">3.3 Response</h3>
+  <p>
+    Success responses return endpoint-specific data. <strong>HTTP 401/403</strong> indicate missing, invalid, or expired token; obtain
+    a new token (3.1) and retry. Application-level codes are documented in <a href="#6-response-codes">Section 6</a>.
+  </p>
+
+  <hr>
+
+  <h2 id="4-format">4. Request and Response Format</h2>
+  <p>
+    Requests use <code>POST</code> with <code>Content-Type: application/json</code>. Response bodies are JSON with standard fields and
+    endpoint-specific data.
+  </p>
+  <p><strong>Standard response fields:</strong></p>
+  <ul>
+    <li><code>responseCode</code> – application-level code (see Section 6)</li>
+    <li><code>requestId</code> – echo of the request or header requestId</li>
+    <li><code>responseMessage</code> – human-readable message</li>
+  </ul>
+
+  <hr>
+
+  <h2 id="5-endpoints">5. API Endpoints</h2>
+
+  <h3 id="51-member-verification">5.1 Member Verification</h3>
+  <p>
+    Verifies a member (by account number) on QCore and returns the member’s name, account status, and currency.
+  </p>
+
+  <table>
+    <thead><tr><th>Property</th><th>Value</th></tr></thead>
+    <tbody>
+      <tr><td><strong>Endpoint</strong></td><td><code>POST /api/v1/third-party-notifications/verifyMember</code></td></tr>
+      <tr><td><strong>Note</strong></td><td>Fixed segment: <code>third-party-notifications</code>.</td></tr>
+      <tr><td><strong>Auth required</strong></td><td>Yes</td></tr>
+    </tbody>
+  </table>
+
+  <h4>Request Body</h4>
+  <table>
+    <thead><tr><th>Field</th><th>Type</th><th>Required</th><th>Description</th></tr></thead>
+    <tbody>
+      <tr><td><strong>requestId</strong></td><td>string</td><td>Yes</td><td>Unique transaction or reference ID</td></tr>
+      <tr><td><strong>memberAccount</strong></td><td>string</td><td>Yes</td><td>Member’s account number</td></tr>
+    </tbody>
+  </table>
+
+  <h4>Request</h4>
+  <pre><code>{
+  "requestId": "TXN202602110001",
+  "memberAccount": "1234567890"
+}</code></pre>
+
+  <h4>Response (success)</h4>
+  <table>
+    <thead><tr><th>Field</th><th>Type</th><th>Description</th></tr></thead>
+    <tbody>
+      <tr><td><strong>responseCode</strong></td><td>string</td><td>"0" indicates success</td></tr>
+      <tr><td><strong>requestId</strong></td><td>string</td><td>Echo of the request’s <code>requestId</code></td></tr>
+      <tr><td><strong>responseMessage</strong></td><td>string</td><td>Human-readable message</td></tr>
+      <tr><td><strong>memberName</strong></td><td>string</td><td>Full name of the member</td></tr>
+      <tr><td><strong>accountStatus</strong></td><td>string</td><td>Account status (e.g. <code>ACTIVE</code>)</td></tr>
+      <tr><td><strong>currency</strong></td><td>string</td><td>Account currency code (e.g. <code>TZS</code>, <code>UGX</code>)</td></tr>
+    </tbody>
+  </table>
+
+  <h4>Response</h4>
+  <pre><code>{
+  "responseCode": "0",
+  "requestId": "TXN202602110001",
+  "responseMessage": "SUCCESS",
+  "memberName": "JOHN DOE",
+  "accountStatus": "ACTIVE",
+  "currency": "TZS"
+}</code></pre>
+
+  <hr>
+
+  <h3 id="52-deposit-notification">5.2 Deposit Notification</h3>
+  <p>
+    Sends a deposit notification to QCore for posting to a member account.
+  </p>
+
+  <table>
+    <thead><tr><th>Property</th><th>Value</th></tr></thead>
+    <tbody>
+      <tr><td><strong>Endpoint</strong></td><td><code>POST /api/v1/third-party-notifications/receiveDepositNotification</code></td></tr>
+      <tr><td><strong>Note</strong></td><td>Fixed segment: <code>third-party-notifications</code>.</td></tr>
+      <tr><td><strong>Auth required</strong></td><td>Yes</td></tr>
+    </tbody>
+  </table>
+
+  <h4>Request Body</h4>
+  <table>
+    <thead><tr><th>Field</th><th>Type</th><th>Required</th><th>Description</th></tr></thead>
+    <tbody>
+      <tr><td><strong>requestId</strong></td><td>string</td><td>Yes</td><td>Unique transaction or reference ID</td></tr>
+      <tr><td><strong>collectionAccount</strong></td><td>string</td><td>Yes</td><td>Collection account number</td></tr>
+      <tr><td><strong>memberAccount</strong></td><td>string</td><td>Yes</td><td>Member’s account number (beneficiary)</td></tr>
+      <tr><td><strong>amount</strong></td><td>number</td><td>Yes</td><td>Deposit amount</td></tr>
+      <tr><td><strong>currency</strong></td><td>string</td><td>Yes</td><td>Currency code (e.g. <code>TZS</code>, <code>UGX</code>)</td></tr>
+      <tr><td><strong>senderAccount</strong></td><td>string</td><td>Yes</td><td>Sender account (e.g. mobile number)</td></tr>
+      <tr><td><strong>senderName</strong></td><td>string</td><td>Yes</td><td>Sender full name</td></tr>
+      <tr><td><strong>senderInstitutionName</strong></td><td>string</td><td>Yes</td><td>Sender institution or provider name</td></tr>
+      <tr><td><strong>externalReference</strong></td><td>string</td><td>No</td><td>External system reference (e.g. MNO reference)</td></tr>
+      <tr><td><strong>narration</strong></td><td>string</td><td>No</td><td>Transaction description or narration</td></tr>
+      <tr><td><strong>transactionDate</strong></td><td>string</td><td>Yes</td><td>Transaction date-time (ISO 8601, e.g. <code>2026-02-11T10:18:00</code>)</td></tr>
+    </tbody>
+  </table>
+
+  <h4>Request</h4>
+  <pre><code>{
+  "requestId": "TXN202602110002",
+  "collectionAccount": "11021092002",
+  "memberAccount": "1234567890",
+  "amount": 50000.00,
+  "currency": "TZS",
+  "senderAccount": "0719234839",
+  "senderName": "Bakari Mkoli Juu",
+  "senderInstitutionName": "Bakari Mkoli Juu",
+  "externalReference": "MNO12345678",
+  "narration": "Mobile Deposit",
+  "transactionDate": "2026-02-11T10:18:00"
+}</code></pre>
+
+  <h4>Response (success)</h4>
+  <table>
+    <thead><tr><th>Field</th><th>Type</th><th>Description</th></tr></thead>
+    <tbody>
+      <tr><td><strong>responseCode</strong></td><td>string</td><td>"0" indicates success</td></tr>
+      <tr><td><strong>responseMessage</strong></td><td>string</td><td>Human-readable message</td></tr>
+      <tr><td><strong>requestId</strong></td><td>string</td><td>Echo of the request’s <code>requestId</code></td></tr>
+      <tr><td><strong>receipt</strong></td><td>string</td><td>Deposit receipt or transaction reference for reconciliation</td></tr>
+    </tbody>
+  </table>
+
+  <h4>Response</h4>
+  <pre><code>{
+  "responseCode": "0",
+  "responseMessage": "Deposit Successful",
+  "requestId": "TXN202602110002",
+  "receipt": "SAC2026000123"
+}</code></pre>
+
+  <hr>
+
+  <h2 id="6-response-codes">6. Response Codes</h2>
+  <p>
+    Application-level response codes used by this API. These are aligned with the Card Integration API response codes.
+  </p>
+  <table>
+    <thead><tr><th>Code</th><th>Description</th></tr></thead>
+    <tbody>
+      <tr><td><strong>0</strong></td><td>Success</td></tr>
+      <tr><td><strong>400</strong></td><td>Bad Request — Invalid or malformed request payload</td></tr>
+      <tr><td><strong>401</strong></td><td>Unauthorized — Missing or invalid authentication</td></tr>
+      <tr><td><strong>403</strong></td><td>Forbidden — Access not allowed for this resource</td></tr>
+      <tr><td><strong>404</strong></td><td>Not Found — Resource or endpoint not found</td></tr>
+      <tr><td><strong>422</strong></td><td>Unprocessable Entity — Validation error (e.g. invalid account number)</td></tr>
+      <tr><td><strong>500</strong></td><td>Internal Server Error — Server-side error; retry or contact support</td></tr>
+      <tr><td><strong>-98</strong></td><td>Validation error — Required field missing or invalid</td></tr>
+      <tr><td><strong>-99</strong></td><td>Business / general error — See <code>responseMessage</code> for details</td></tr>
+    </tbody>
+  </table>
+
+  <hr>
+
+  <h2 id="7-error-handling">7. Error Handling</h2>
+  <p>
+    Always check <code>responseCode</code> before using response data (see Section 6). HTTP status and/or body may carry
+    <code>400</code>, <code>401</code>, <code>403</code>, <code>404</code>, or <code>500</code>; application codes <code>0</code>, <code>-98</code>, and <code>-99</code> are in <code>responseCode</code>.
+    Use <code>requestId</code> for correlation and support.
+  </p>
+
+  <footer>
+    <strong>Document Version:</strong> 1.0<br>
+    <strong>Last Updated:</strong> March 2026<br>
+    <strong>Maintained By:</strong> Quantive Core Development Team
+  </footer>
+
+</body>
+</html>

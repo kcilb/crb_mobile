@@ -1,14 +1,5 @@
 import 'package:flutter/material.dart';
 
-void main() {
-  runApp(
-    const MaterialApp(
-      home: NotificationScreen(),
-      debugShowCheckedModeBanner: false,
-    ),
-  );
-}
-
 class NotificationScreen extends StatefulWidget {
   const NotificationScreen({super.key});
 

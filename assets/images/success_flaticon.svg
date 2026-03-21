@@ -1,0 +1,6 @@
+<!-- Flat-style success graphic (Flaticon-style). Replace with your licensed Flaticon asset if needed; keep the same path or update SuccessDialog.assetPath. -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <circle cx="256" cy="256" r="200" fill="#EA580C" opacity="0.12"/>
+  <circle cx="256" cy="256" r="128" fill="#EA580C"/>
+  <path d="M160 264l72 72 120-144" stroke="#FFFFFF" stroke-width="40" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+</svg>

@@ -1,3 +1,6 @@
+import 'package:crb_mobile/dialogs/balance_code_dialog.dart';
+import 'package:crb_mobile/dialogs/dialog_theme.dart';
+import 'package:crb_mobile/dialogs/logout_dialog.dart';
 import 'package:crb_mobile/modules/extras/notification_screen.dart';
 import 'package:crb_mobile/modules/extras/user_profile.dart';
 import 'package:crb_mobile/modules/extras/common_action_screens.dart';
@@ -11,7 +14,10 @@ class CreditDashboard extends StatefulWidget {
   State<CreditDashboard> createState() => _CreditDashboardState();
 }
 
-class _CreditDashboardState extends State<CreditDashboard> {
+class _CreditDashboardState extends State<CreditDashboard>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _headerShapesController;
+
   final double creditScore = 740.0;
   final double maxCreditScore = 1000.0;
   final String userName = "John Mwangi";
@@ -27,6 +33,11 @@ class _CreditDashboardState extends State<CreditDashboard> {
   @override
   void initState() {
     super.initState();
+    _headerShapesController = AnimationController(
+      vsync: this,
+      duration: const Duration(seconds: 16),
+    )..repeat();
+
     // Trigger entry animation after first frame
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) {
@@ -37,10 +48,26 @@ class _CreditDashboardState extends State<CreditDashboard> {
     });
   }
 
+  @override
+  void dispose() {
+    _headerShapesController.dispose();
+    super.dispose();
+  }
+
   int _selectedNavIndex = 0;
 
   bool isEligibleForLoan() {
     return creditScore >= 670 && (availableCredit / totalCreditLimit) >= 0.3;
+  }
+
+  /// System back / predictive back: offer same flow as profile logout.
+  Future<void> _promptLogoutOnBackPress() async {
+    final navigator = Navigator.of(context);
+    final confirmed = await LogoutDialog.show(context);
+    if (!mounted) return;
+    if (confirmed == true) {
+      navigator.pushNamedAndRemoveUntil('/login', (route) => false);
+    }
   }
 
   List<String> getLoanSuggestions() {
@@ -60,11 +87,14 @@ class _CreditDashboardState extends State<CreditDashboard> {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final colorScheme = theme.colorScheme;
-
-    return Scaffold(
-      backgroundColor: const Color(0xFFF6F7FB),
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (bool didPop, dynamic result) {
+        if (didPop) return;
+        _promptLogoutOnBackPress();
+      },
+      child: Scaffold(
+      backgroundColor: kFieldFill,
       extendBodyBehindAppBar: true,
       appBar: AppBar(
         title: const Text('Dashboard', style: TextStyle(color: Colors.white)),
@@ -97,41 +127,37 @@ class _CreditDashboardState extends State<CreditDashboard> {
       ),
       body: Stack(
         children: [
-          // Curved Background Section
           Column(
             children: [
-              Container(
-                height: MediaQuery.of(context).size.height * 0.43,
-                decoration: const BoxDecoration(
-                  image: DecorationImage(
-                    image: AssetImage('assets/images/background.jpg'),
-                    fit: BoxFit.cover,
+              ClipPath(
+                clipper: BottomCurveClipper(),
+                child: SizedBox(
+                  height: MediaQuery.of(context).size.height * 0.43,
+                  width: double.infinity,
+                  child: Stack(
+                    fit: StackFit.expand,
+                    children: [
+                      Container(color: kThemeBg),
+                      AnimatedBuilder(
+                        animation: _headerShapesController,
+                        builder: (context, _) {
+                          return CustomPaint(
+                            painter: BottomAbstractShapesPainter(
+                              backgroundColor: kThemeBg,
+                              accentColor: kPrimaryBlue,
+                              phase: _headerShapesController.value,
+                            ),
+                          );
+                        },
+                      ),
+                    ],
                   ),
-                ),
-                child: ClipPath(
-                  clipper: BottomCurveClipper(),
-                  child: Container(),
                 ),
               ),
               const Expanded(child: SizedBox()),
             ],
           ),
-          // Contrast overlay for legibility
-          Container(
-            height: MediaQuery.of(context).size.height * 0.43,
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
-                colors: [
-                  Colors.black.withOpacity(0.25),
-                  Colors.black.withOpacity(0.45),
-                ],
-              ),
-            ),
-          ),
 
-          // Main content with sticky header
           Positioned.fill(
             child: Padding(
               padding: EdgeInsets.only(
@@ -174,6 +200,7 @@ class _CreditDashboardState extends State<CreditDashboard> {
         ],
       ),
       bottomNavigationBar: _buildBottomNavBar(context),
+    ),
     );
   }
 
@@ -231,12 +258,13 @@ class _CreditDashboardState extends State<CreditDashboard> {
         child: Container(
           padding: const EdgeInsets.all(18),
           decoration: BoxDecoration(
-            gradient: const LinearGradient(
+            gradient: LinearGradient(
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
-              colors: [Color(0xFFFFFFFF), Color(0xFFF4F7FF)],
+              colors: [Colors.white, kFieldFill],
             ),
             borderRadius: BorderRadius.circular(22),
+            border: Border.all(color: kFieldBorder.withOpacity(0.85)),
             boxShadow: [
               BoxShadow(
                 color: Colors.black.withOpacity(0.05),
@@ -265,8 +293,8 @@ class _CreditDashboardState extends State<CreditDashboard> {
                         shape: BoxShape.circle,
                         gradient: LinearGradient(
                           colors: [
-                            Theme.of(context).colorScheme.primary,
-                            Theme.of(context).colorScheme.secondary,
+                            kPrimaryBlue,
+                            kPrimaryBlue.withOpacity(0.75),
                           ],
                         ),
                       ),
@@ -310,7 +338,7 @@ class _CreditDashboardState extends State<CreditDashboard> {
                             context,
                           ).textTheme.titleLarge?.copyWith(
                             fontWeight: FontWeight.w800,
-                            color: Colors.black87,
+                            color: kFieldTextColor,
                           ),
                         ),
                         const SizedBox(height: 4),
@@ -335,10 +363,10 @@ class _CreditDashboardState extends State<CreditDashboard> {
 
                   // View Profile Button
                   IconButton(
-                    icon: Icon(
+                    icon: const Icon(
                       Icons.arrow_forward_ios,
                       size: 18,
-                      color: Theme.of(context).colorScheme.primary,
+                      color: kPrimaryBlue,
                     ),
                     onPressed: () {
                       Navigator.push(
@@ -353,9 +381,9 @@ class _CreditDashboardState extends State<CreditDashboard> {
               ),
 
               // Divider with spacing
-              const Padding(
+              Padding(
                 padding: EdgeInsets.symmetric(vertical: 12),
-                child: Divider(height: 1, color: Colors.black12),
+                child: Divider(height: 1, color: kFieldBorder.withOpacity(0.6)),
               ),
 
               // Quick Stats Row with balance protection
@@ -396,9 +424,9 @@ class _CreditDashboardState extends State<CreditDashboard> {
                       Text(
                         'Tap to enter code and view balances',
                         style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                              color: Colors.grey[600],
-                              fontSize: 11,
-                            ),
+                          color: Colors.grey[600],
+                          fontSize: 11,
+                        ),
                       ),
                   ],
                 ),
@@ -412,9 +440,13 @@ class _CreditDashboardState extends State<CreditDashboard> {
 
   Widget _buildInfoChip(IconData icon, String label) {
     return Chip(
-      backgroundColor: Colors.grey[100],
-      avatar: Icon(icon, size: 16, color: Colors.blue),
-      label: Text(label, style: const TextStyle(fontSize: 12)),
+      backgroundColor: kFieldFill,
+      side: BorderSide(color: kFieldBorder.withOpacity(0.7)),
+      avatar: Icon(icon, size: 16, color: kPrimaryBlue),
+      label: Text(
+        label,
+        style: const TextStyle(fontSize: 12, color: kFieldTextColor),
+      ),
       visualDensity: VisualDensity.compact,
       materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
     );
@@ -431,16 +463,16 @@ class _CreditDashboardState extends State<CreditDashboard> {
             Text(
               'Quick actions',
               style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                    fontWeight: FontWeight.w800,
-                  ),
+                fontWeight: FontWeight.w800,
+                color: kFieldTextColor,
+              ),
             ),
             const Spacer(),
             Text(
               'Most used',
-              style: Theme.of(context)
-                  .textTheme
-                  .bodySmall
-                  ?.copyWith(color: Colors.grey[600]),
+              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                color: kFieldTextColor.withOpacity(0.55),
+              ),
             ),
           ],
         ),
@@ -557,22 +589,25 @@ class _CreditDashboardState extends State<CreditDashboard> {
       children: [
         obscure
             ? Icon(
-                Icons.visibility_off_outlined,
-                size: 20,
-                color: Colors.grey[500],
-              )
+              Icons.visibility_off_outlined,
+              size: 20,
+              color: Colors.grey[500],
+            )
             : Text(
-                value,
-                style: const TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.black87,
-                ),
+              value,
+              style: const TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+                color: kFieldTextColor,
               ),
+            ),
         const SizedBox(height: 4),
         Text(
           label,
-          style: TextStyle(fontSize: 12, color: Colors.grey[600]),
+          style: TextStyle(
+            fontSize: 12,
+            color: kFieldTextColor.withOpacity(0.65),
+          ),
         ),
       ],
     );
@@ -580,140 +615,16 @@ class _CreditDashboardState extends State<CreditDashboard> {
 
   Future<void> _promptBalanceCode(BuildContext context) async {
     final theme = Theme.of(context);
-    String code = '';
 
-    final success = await showDialog<bool>(
-          context: context,
-          barrierDismissible: true,
-          builder: (context) {
-            return StatefulBuilder(
-              builder: (context, setSheetState) {
-                return AlertDialog(
-                  insetPadding:
-                      const EdgeInsets.symmetric(horizontal: 48, vertical: 24),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                  title: Row(
-                    children: [
-                      Container(
-                        height: 30,
-                        width: 30,
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          color: theme.colorScheme.primary.withOpacity(0.08),
-                        ),
-                        child: Icon(
-                          Icons.lock_outline_rounded,
-                          size: 18,
-                          color: theme.colorScheme.primary,
-                        ),
-                      ),
-                      const SizedBox(width: 10),
-                      const Text('View balances'),
-                    ],
-                  ),
-                  content: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Enter your 4‑digit code to reveal amounts.',
-                        style: theme.textTheme.bodySmall
-                            ?.copyWith(color: Colors.grey[700]),
-                      ),
-                      const SizedBox(height: 12),
-                      SizedBox(
-                        height: 56,
-                        child: Stack(
-                          alignment: Alignment.center,
-                          children: [
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                              children: List.generate(4, (index) {
-                                final digit =
-                                    index < code.length ? code[index] : '';
-                                return Container(
-                                  width: 42,
-                                  height: 42,
-                                  decoration: BoxDecoration(
-                                    shape: BoxShape.circle,
-                                    border: Border.all(
-                                      width: 1.6,
-                                      color: digit.isNotEmpty
-                                          ? theme.colorScheme.primary
-                                          : Colors.grey.shade500,
-                                    ),
-                                    color: digit.isNotEmpty
-                                        ? theme.colorScheme.primary
-                                            .withOpacity(0.06)
-                                        : Colors.transparent,
-                                  ),
-                                  alignment: Alignment.center,
-                                  child: Text(
-                                    digit,
-                                    style: theme.textTheme.titleMedium
-                                        ?.copyWith(
-                                      fontWeight: FontWeight.w700,
-                                      color: theme.colorScheme.primary,
-                                    ),
-                                  ),
-                                );
-                              }),
-                            ),
-                            // Invisible text field capturing input
-                            Opacity(
-                              opacity: 0.0,
-                              child: TextField(
-                                autofocus: true,
-                                keyboardType: TextInputType.number,
-                                maxLength: 4,
-                                onChanged: (value) {
-                                  if (value.length <= 4) {
-                                    setSheetState(() {
-                                      code = value;
-                                    });
-                                  }
-                                  if (value.length == 4) {
-                                    // Demo: accept 1234 as the correct code
-                                    if (value == '1234') {
-                                      Navigator.of(context).pop(true);
-                                    } else {
-                                      Navigator.of(context).pop(false);
-                                    }
-                                  }
-                                },
-                                decoration: const InputDecoration(
-                                  counterText: '',
-                                  border: InputBorder.none,
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                  actions: [
-                    TextButton(
-                      onPressed: () => Navigator.of(context).pop(false),
-                      child: const Text('Cancel'),
-                    ),
-                  ],
-                );
-              },
-            );
-          },
-        ) ??
-        false;
+    final result = await BalanceCodeDialog.show(context);
 
     if (!mounted) return;
 
-    if (success) {
+    if (result == true) {
       setState(() {
         _showBalances = true;
       });
-    } else {
+    } else if (result == false) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Row(
@@ -721,9 +632,7 @@ class _CreditDashboardState extends State<CreditDashboard> {
               Icon(Icons.info_outline, color: Colors.white, size: 18),
               SizedBox(width: 8),
               Expanded(
-                child: Text(
-                  'We could not verify that code. Please try again.',
-                ),
+                child: Text('We could not verify that code. Please try again.'),
               ),
             ],
           ),
@@ -761,8 +670,12 @@ class _CreditDashboardState extends State<CreditDashboard> {
     }
 
     return Card(
-      elevation: 4,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      elevation: 2,
+      color: Colors.white,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+        side: BorderSide(color: kFieldBorder.withOpacity(0.7)),
+      ),
       child: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
@@ -789,8 +702,9 @@ class _CreditDashboardState extends State<CreditDashboard> {
                 Text(
                   'Credit score',
                   style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                        fontWeight: FontWeight.w700,
-                      ),
+                    fontWeight: FontWeight.w700,
+                    color: kFieldTextColor,
+                  ),
                 ),
               ],
             ),
@@ -798,8 +712,8 @@ class _CreditDashboardState extends State<CreditDashboard> {
             Text(
               'Overall health of your profile',
               style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    color: Colors.grey[600],
-                  ),
+                color: kFieldTextColor.withOpacity(0.65),
+              ),
             ),
             const SizedBox(height: 8),
             Container(
@@ -824,8 +738,10 @@ class _CreditDashboardState extends State<CreditDashboard> {
                 duration: const Duration(milliseconds: 900),
                 curve: Curves.easeOutCubic,
                 builder: (context, animatedValue, _) {
-                  final animatedScore =
-                      (maxCreditScore * animatedValue).clamp(0, maxCreditScore);
+                  final animatedScore = (maxCreditScore * animatedValue).clamp(
+                    0,
+                    maxCreditScore,
+                  );
                   return Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
@@ -851,29 +767,26 @@ class _CreditDashboardState extends State<CreditDashboard> {
                                     begin: 0,
                                     end: creditScore.toInt(),
                                   ),
-                                  duration:
-                                      const Duration(milliseconds: 900),
+                                  duration: const Duration(milliseconds: 900),
                                   curve: Curves.easeOutCubic,
                                   builder: (context, value, _) {
                                     return Text(
                                       value.toString(),
-                                      style: Theme.of(context)
-                                          .textTheme
-                                          .headlineSmall
-                                          ?.copyWith(
-                                            fontWeight: FontWeight.w800,
-                                            color: Theme.of(context)
-                                                .colorScheme
-                                                .primary,
-                                          ),
+                                      style: Theme.of(
+                                        context,
+                                      ).textTheme.headlineSmall?.copyWith(
+                                        fontWeight: FontWeight.w800,
+                                        color:
+                                            Theme.of(
+                                              context,
+                                            ).colorScheme.primary,
+                                      ),
                                     );
                                   },
                                 ),
                                 Text(
                                   'out of ${maxCreditScore.toInt()}',
-                                  style: Theme.of(context)
-                                      .textTheme
-                                      .bodySmall
+                                  style: Theme.of(context).textTheme.bodySmall
                                       ?.copyWith(color: Colors.grey[600]),
                                 ),
                               ],
@@ -898,13 +811,12 @@ class _CreditDashboardState extends State<CreditDashboard> {
                             builder: (context, trendValue, _) {
                               return Text(
                                 '+$trendValue pts last 30 days',
-                                style: Theme.of(context)
-                                    .textTheme
-                                    .bodySmall
-                                    ?.copyWith(
-                                      color: Colors.green[700],
-                                      fontWeight: FontWeight.w600,
-                                    ),
+                                style: Theme.of(
+                                  context,
+                                ).textTheme.bodySmall?.copyWith(
+                                  color: Colors.green[700],
+                                  fontWeight: FontWeight.w600,
+                                ),
                               );
                             },
                           ),
@@ -1271,8 +1183,12 @@ class _CreditDashboardState extends State<CreditDashboard> {
     final suggestions = getLoanSuggestions();
 
     return Card(
-      elevation: 4,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      elevation: 2,
+      color: Colors.white,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+        side: BorderSide(color: kFieldBorder.withOpacity(0.7)),
+      ),
       child: Padding(
         padding: const EdgeInsets.all(20.0),
         child: Column(
@@ -1447,18 +1363,16 @@ class _CreditDashboardState extends State<CreditDashboard> {
                 children: [
                   Text(
                     institution,
-                    style: Theme.of(context)
-                        .textTheme
-                        .bodyMedium
-                        ?.copyWith(fontWeight: FontWeight.w700),
+                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                      fontWeight: FontWeight.w700,
+                    ),
                   ),
                   const SizedBox(height: 2),
                   Text(
                     'ID $id • $date',
-                    style: Theme.of(context)
-                        .textTheme
-                        .bodySmall
-                        ?.copyWith(color: Colors.grey[600]),
+                    style: Theme.of(
+                      context,
+                    ).textTheme.bodySmall?.copyWith(color: Colors.grey[600]),
                   ),
                 ],
               ),
@@ -1476,8 +1390,10 @@ class _CreditDashboardState extends State<CreditDashboard> {
                 ),
                 const SizedBox(height: 4),
                 Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 2,
+                  ),
                   decoration: BoxDecoration(
                     color: Colors.grey[100],
                     borderRadius: BorderRadius.circular(999),
@@ -1485,9 +1401,9 @@ class _CreditDashboardState extends State<CreditDashboard> {
                   child: Text(
                     'Hard inquiry',
                     style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                          color: Colors.grey[700],
-                          fontWeight: FontWeight.w500,
-                        ),
+                      color: Colors.grey[700],
+                      fontWeight: FontWeight.w500,
+                    ),
                   ),
                 ),
               ],
@@ -1535,6 +1451,7 @@ class _CreditDashboardState extends State<CreditDashboard> {
           decoration: BoxDecoration(
             color: Colors.white,
             borderRadius: BorderRadius.circular(24),
+            border: Border.all(color: kFieldBorder.withOpacity(0.85)),
             boxShadow: [
               BoxShadow(
                 color: Colors.black.withOpacity(0.07),
@@ -1622,9 +1539,10 @@ class _AnimatedNavItem extends StatelessWidget {
         curve: Curves.easeOutCubic,
         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
         decoration: BoxDecoration(
-          color: isSelected
-              ? colorScheme.primary.withOpacity(0.10)
-              : Colors.transparent,
+          color:
+              isSelected
+                  ? colorScheme.primary.withOpacity(0.10)
+                  : Colors.transparent,
           borderRadius: BorderRadius.circular(18),
         ),
         child: Row(
@@ -1638,37 +1556,57 @@ class _AnimatedNavItem extends StatelessWidget {
               child: Icon(
                 isSelected ? selectedIcon : icon,
                 size: 22,
-                color:
-                    isSelected ? colorScheme.primary : Colors.grey.shade600,
+                color: isSelected ? colorScheme.primary : Colors.grey.shade600,
               ),
             ),
             AnimatedSize(
               duration: const Duration(milliseconds: 220),
               curve: Curves.easeOutCubic,
-              child: SizedBox(
-                width: isSelected ? 6 : 0,
-              ),
+              child: SizedBox(width: isSelected ? 6 : 0),
             ),
             AnimatedSwitcher(
               duration: const Duration(milliseconds: 200),
               switchInCurve: Curves.easeOutCubic,
               switchOutCurve: Curves.easeInCubic,
-              child: isSelected
-                  ? Text(
-                      label,
-                      key: ValueKey(label),
-                      style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                            fontWeight: FontWeight.w600,
-                            color: colorScheme.primary,
-                          ),
-                    )
-                  : const SizedBox.shrink(),
+              child:
+                  isSelected
+                      ? Text(
+                        label,
+                        key: ValueKey(label),
+                        style: Theme.of(
+                          context,
+                        ).textTheme.labelMedium?.copyWith(
+                          fontWeight: FontWeight.w600,
+                          color: colorScheme.primary,
+                        ),
+                      )
+                      : const SizedBox.shrink(),
             ),
           ],
         ),
       ),
     );
   }
+}
+
+class BottomCurveClipper extends CustomClipper<Path> {
+  @override
+  Path getClip(Size size) {
+    final path = Path();
+    path.lineTo(0, size.height - 30);
+    path.quadraticBezierTo(
+      size.width / 2,
+      size.height + 30,
+      size.width,
+      size.height - 30,
+    );
+    path.lineTo(size.width, 0);
+    path.close();
+    return path;
+  }
+
+  @override
+  bool shouldReclip(CustomClipper<Path> oldClipper) => false;
 }
 
 class _QuickActionTile extends StatelessWidget {
@@ -1714,33 +1652,14 @@ class _QuickActionTile extends StatelessWidget {
               textAlign: TextAlign.center,
               maxLines: 2,
               overflow: TextOverflow.ellipsis,
-              style: Theme.of(
-                context,
-              ).textTheme.labelMedium?.copyWith(fontWeight: FontWeight.w700),
+              style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                fontWeight: FontWeight.w700,
+                color: kFieldTextColor,
+              ),
             ),
           ],
         ),
       ),
     );
   }
-}
-
-class BottomCurveClipper extends CustomClipper<Path> {
-  @override
-  Path getClip(Size size) {
-    var path = Path();
-    path.lineTo(0, size.height - 30);
-    path.quadraticBezierTo(
-      size.width / 2,
-      size.height + 30,
-      size.width,
-      size.height - 30,
-    );
-    path.lineTo(size.width, 0);
-    path.close();
-    return path;
-  }
-
-  @override
-  bool shouldReclip(CustomClipper<Path> oldClipper) => false;
 }

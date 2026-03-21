@@ -29,6 +29,8 @@ environment:
 # versions available, run `flutter pub outdated`.
 dependencies:
   google_fonts: ^4.0.4
+  flutter_svg: ^2.0.10+1
+  local_auth: ^2.3.0
   flutter:
     sdk: flutter
 

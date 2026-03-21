@@ -1,9 +1,7 @@
+import 'package:crb_mobile/dialogs/dialog_theme.dart';
 import 'package:crb_mobile/modules/auth/user_auth.dart';
 import 'package:crb_mobile/modules/splash-screen/onboarding_page.dart';
-import 'package:crb_mobile/modules/splash-screen/splash_screen.dart';
 import 'package:flutter/material.dart';
-import 'modules/splash-screen/splash_screen.dart';
-import 'modules/auth/user_auth.dart';
 
 void main() {
   runApp(const CreditTrackApp());
@@ -18,20 +16,34 @@ class CreditTrackApp extends StatelessWidget {
       title: 'CreditTrack',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(
-          seedColor: Colors.blue,
-          primary: Colors.blue[800],
-          secondary: Colors.blue[600],
-        ),
+        useMaterial3: true,
         fontFamily: 'Roboto',
+        colorScheme: ColorScheme.fromSeed(
+          seedColor: kPrimaryBlue,
+          primary: kPrimaryBlue,
+        ),
         textTheme: const TextTheme().apply(
           bodyColor: Colors.grey[800],
           displayColor: Colors.black,
           fontFamily: 'Roboto',
         ),
+        inputDecorationTheme: InputDecorationTheme(
+          labelStyle: kFieldLabelStyle,
+          floatingLabelStyle: kFieldLabelStyle,
+          hintStyle: TextStyle(
+            color: kFieldTextColor.withOpacity(0.65),
+            fontSize: 15,
+            fontWeight: FontWeight.w500,
+          ),
+        ),
+        textSelectionTheme: TextSelectionThemeData(
+          cursorColor: kPrimaryBlue,
+          selectionColor: kPrimaryBlue.withOpacity(0.28),
+          selectionHandleColor: kPrimaryBlue,
+        ),
         elevatedButtonTheme: ElevatedButtonThemeData(
           style: ElevatedButton.styleFrom(
-            backgroundColor: Colors.blue[800],
+            backgroundColor: kPrimaryBlue,
             foregroundColor: Colors.white,
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(12),
@@ -42,6 +54,9 @@ class CreditTrackApp extends StatelessWidget {
         visualDensity: VisualDensity.adaptivePlatformDensity,
       ),
       home: const HomeScreen(),
+      routes: {
+        '/login': (context) => const UserAuth(),
+      },
     );
   }
 }
