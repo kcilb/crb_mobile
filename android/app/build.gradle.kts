@@ -43,3 +43,8 @@ android {
 flutter {
     source = "../.."
 }
+
+dependencies {
+    // Android 12+ system splash: match icon to ic_launch_screen_icon / Flutter asset pipeline.
+    implementation("androidx.core:core-splashscreen:1.0.1")
+}

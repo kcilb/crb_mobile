@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Native launch: soft wash (legacy); solid white splash -->
+    <color name="launch_bg_soft_start">#FFF7ED</color>
+    <color name="launch_bg_soft_end">#FFEDD5</color>
+    <color name="launch_bg_white">#FFFFFF</color>
+    <color name="launch_orb_primary_soft">#26EA580C</color>
+    <color name="launch_orb_peach_soft">#40FED7AA</color>
+	<color name="ic_launcher_background">#7C2D12</color>
+</resources>

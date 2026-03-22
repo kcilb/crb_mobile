@@ -1,5 +1,6 @@
 import 'package:crb_mobile/dialogs/dialog_theme.dart';
 import 'package:crb_mobile/dialogs/otp_dialog.dart';
+import 'package:crb_mobile/widgets/brand_app_icon.dart';
 import 'package:crb_mobile/modules/dashboard/credit_dashboard.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -17,13 +18,10 @@ class UserAuth extends StatefulWidget {
   State<UserAuth> createState() => _UserAuthState();
 }
 
-class _UserAuthState extends State<UserAuth>
-    with SingleTickerProviderStateMixin {
+class _UserAuthState extends State<UserAuth> {
   bool _rememberMe = false;
   bool _obscurePassword = true;
   bool _biometricBusy = false;
-
-  late final AnimationController _waveController;
 
   final ScrollController _scrollController = ScrollController();
   final GlobalKey _emailFieldKey = GlobalKey();
@@ -62,11 +60,6 @@ class _UserAuthState extends State<UserAuth>
   @override
   void initState() {
     super.initState();
-
-    _waveController = AnimationController(
-      vsync: this,
-      duration: const Duration(seconds: 28),
-    )..repeat();
 
     _emailFocusNode.addListener(() {
       if (_emailFocusNode.hasFocus) _scrollToField(_emailFieldKey);
@@ -144,7 +137,6 @@ class _UserAuthState extends State<UserAuth>
 
   @override
   void dispose() {
-    _waveController.dispose();
     _scrollController.dispose();
     _emailFocusNode.dispose();
     _passwordFocusNode.dispose();
@@ -161,34 +153,39 @@ class _UserAuthState extends State<UserAuth>
     const cardFlex = 58;
     const overlap = 28.0;
 
-    return Scaffold(
-      backgroundColor: kThemeBg,
-      resizeToAvoidBottomInset: true,
-      body: Stack(
-        fit: StackFit.expand,
-        children: [
-          Positioned.fill(
-            child: DecoratedBox(
-              decoration: BoxDecoration(gradient: kOnboardingScaffoldGradient),
+    return AnnotatedRegion<SystemUiOverlayStyle>(
+      value: SystemUiOverlayStyle.light,
+      child: Scaffold(
+        backgroundColor: kThemeBg,
+        resizeToAvoidBottomInset: true,
+        body: Stack(
+          fit: StackFit.expand,
+          children: [
+            Positioned.fill(
+              child: DecoratedBox(
+                decoration:
+                    BoxDecoration(gradient: kOnboardingScaffoldGradient),
+              ),
             ),
-          ),
-          Positioned.fill(
-            child: AnimatedBuilder(
-              animation: _waveController,
-              builder: (context, child) {
-                return CustomPaint(
-                  painter: AnimatedOnboardingWaveBackgroundPainter(
-                    phase: _waveController.value,
-                  ),
-                );
-              },
+            Positioned.fill(
+              child: CustomPaint(
+                painter: OnboardingWaveBackgroundPainter(),
+              ),
             ),
-          ),
-          LayoutBuilder(
+            Positioned.fill(
+              child: SafeArea(
+                child: IgnorePointer(
+                  child: SplashBackgroundAccents(),
+                ),
+              ),
+            ),
+            LayoutBuilder(
             builder: (context, constraints) {
             final h = constraints.maxHeight;
             final headerH = h * headerFlex / (headerFlex + cardFlex);
             final bottomInset = MediaQuery.paddingOf(context).bottom;
+
+            final colorScheme = Theme.of(context).colorScheme;
 
             return Stack(
               fit: StackFit.expand,
@@ -203,64 +200,75 @@ class _UserAuthState extends State<UserAuth>
                   child: SafeArea(
                     bottom: false,
                     child: Padding(
-                          padding: const EdgeInsets.fromLTRB(24, 32, 24, 48),
-                          child: Column(
+                      padding: const EdgeInsets.fromLTRB(24, 32, 24, 48),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          Row(
+                            mainAxisSize: MainAxisSize.min,
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            crossAxisAlignment: CrossAxisAlignment.center,
                             children: [
-                              Container(
-                                width: 64,
-                                height: 64,
-                                decoration: BoxDecoration(
-                                  color: Colors.white.withOpacity(0.2),
-                                  shape: BoxShape.circle,
-                                  border: Border.all(
-                                    color: Colors.white.withOpacity(0.35),
-                                    width: 1.5,
+                              const CreditTrackAppIconMark(size: 46),
+                              const SizedBox(width: 12),
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.center,
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Text(
+                                    'CreditTrack',
+                                    textAlign: TextAlign.center,
+                                    style: TextStyle(
+                                      fontSize: 20,
+                                      fontWeight: FontWeight.w700,
+                                      color: kOnboardingOnCardTitle,
+                                      letterSpacing: 0.5,
+                                    ),
                                   ),
-                                ),
-                                child: Stack(
-                                  alignment: Alignment.center,
-                                  children: [
-                                    Icon(
-                                      Icons.shield_outlined,
-                                      size: 36,
-                                      color: Colors.white.withOpacity(0.95),
+                                  const SizedBox(height: 2),
+                                  Text(
+                                    'Smart credit, simple decisions.',
+                                    textAlign: TextAlign.center,
+                                    style: TextStyle(
+                                      fontSize: 12,
+                                      color: kOnboardingOnCardBody,
                                     ),
-                                    Positioned(
-                                      bottom: 18,
-                                      child: Icon(
-                                        Icons.keyboard_arrow_up_rounded,
-                                        size: 22,
-                                        color: Colors.white,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                              const SizedBox(height: 28),
-                              const Text(
-                                'Sign in to your Account',
-                                textAlign: TextAlign.center,
-                                style: TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 26,
-                                  fontWeight: FontWeight.w700,
-                                  height: 1.2,
-                                  letterSpacing: -0.5,
-                                ),
-                              ),
-                              const SizedBox(height: 12),
-                              const Text(
-                                'Enter your email and password to log in',
-                                textAlign: TextAlign.center,
-                                style: TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 15,
-                                  height: 1.4,
-                                ),
+                                  ),
+                                ],
                               ),
                             ],
                           ),
-                        ),
+                          const SizedBox(height: 28),
+                          Center(
+                            child: Column(
+                              children: [
+                                Text(
+                                  'Sign in to your Account',
+                                  textAlign: TextAlign.center,
+                                  style: TextStyle(
+                                    color: kOnboardingOnCardTitle,
+                                    fontSize: 26,
+                                    fontWeight: FontWeight.w700,
+                                    height: 1.2,
+                                    letterSpacing: -0.5,
+                                  ),
+                                ),
+                                const SizedBox(height: 12),
+                                Text(
+                                  'Enter your email and password to log in',
+                                  textAlign: TextAlign.center,
+                                  style: TextStyle(
+                                    color: kOnboardingOnCardBody,
+                                    fontSize: 15,
+                                    height: 1.4,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
                   ),
                 ),
                 // —— White card: from below header overlap to bottom of screen ——
@@ -278,21 +286,12 @@ class _UserAuthState extends State<UserAuth>
                     child: ClipRRect(
                       borderRadius: _kCardTopRadius,
                       child: Stack(
+                        clipBehavior: Clip.none,
                         children: [
-                          // Abstract shapes behind inputs/buttons (background touch).
-                          Positioned(
-                            left: 0,
-                            right: 0,
-                            bottom: 0,
-                            height: 120,
+                          // Splash-style gradient orbs on the card (full-screen orbs sit under header only).
+                          Positioned.fill(
                             child: IgnorePointer(
-                              child: CustomPaint(
-                                painter: const BottomAbstractShapesPainter(
-                                  backgroundColor: kThemeBg,
-                                  accentColor: kPrimaryBlue,
-                                ),
-                                child: const SizedBox.expand(),
-                              ),
+                              child: SplashStylePanelAccents(),
                             ),
                           ),
                           SingleChildScrollView(
@@ -844,6 +843,7 @@ class _UserAuthState extends State<UserAuth>
           ),
         ],
       ),
+    ),
     );
   }
 

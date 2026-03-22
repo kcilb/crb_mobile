@@ -1,6 +1,7 @@
 import 'package:crb_mobile/dialogs/dialog_theme.dart';
 import 'package:crb_mobile/modules/auth/user_auth.dart';
 import 'package:crb_mobile/modules/splash-screen/onboarding_page.dart';
+import 'package:crb_mobile/modules/splash-screen/splash_screen.dart';
 import 'package:flutter/material.dart';
 
 void main() {
@@ -61,17 +62,31 @@ class CreditTrackApp extends StatelessWidget {
   }
 }
 
-class HomeScreen extends StatelessWidget {
+class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
+
+  @override
+  State<HomeScreen> createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends State<HomeScreen> {
+  bool _showOnboarding = false;
+
+  void _goToLogin() {
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(builder: (context) => const UserAuth()),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
-    return OnboardingPage(
-      onComplete: () {
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (context) => const UserAuth()),
-        );
-      },
+    if (_showOnboarding) {
+      return OnboardingPage(onComplete: _goToLogin);
+    }
+    return SplashScreen(
+      onSkipPressed: _goToLogin,
+      onNextPressed: () => setState(() => _showOnboarding = true),
     );
   }
 }

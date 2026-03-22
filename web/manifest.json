@@ -1,11 +1,11 @@
 {
-    "name": "crb_mobile",
-    "short_name": "crb_mobile",
+    "name": "CreditTrack",
+    "short_name": "CreditTrack",
     "start_url": ".",
     "display": "standalone",
-    "background_color": "#0175C2",
-    "theme_color": "#0175C2",
-    "description": "A new Flutter project.",
+    "background_color": "#7C2D12",
+    "theme_color": "#EA580C",
+    "description": "Smart credit, simple decisions.",
     "orientation": "portrait-primary",
     "prefer_related_applications": false,
     "icons": [

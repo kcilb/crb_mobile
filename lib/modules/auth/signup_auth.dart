@@ -1,5 +1,6 @@
 import 'package:crb_mobile/dialogs/dialog_theme.dart';
 import 'package:crb_mobile/modules/dashboard/credit_dashboard.dart';
+import 'package:crb_mobile/widgets/brand_app_icon.dart';
 import 'package:flutter/material.dart';
 
 /// Signup screen with panel-style form sections.
@@ -148,10 +149,10 @@ class _SignupAuthState extends State<SignupAuth>
                                     width: 1.5,
                                   ),
                                 ),
-                                child: const Icon(
-                                  Icons.shield_outlined,
-                                  size: 36,
-                                  color: Colors.white,
+                                alignment: Alignment.center,
+                                child: const CreditTrackAppIconMark(
+                                  size: 48,
+                                  clipStyle: CreditTrackAppIconMarkClip.circle,
                                 ),
                               ),
                               const SizedBox(height: 28),

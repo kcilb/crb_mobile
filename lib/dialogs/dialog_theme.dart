@@ -99,6 +99,99 @@ class OnboardingWaveBackgroundPainter extends CustomPainter {
   bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }
 
+/// Soft gradient orbs behind content — matches the splash screen layer.
+class SplashBackgroundAccents extends StatelessWidget {
+  const SplashBackgroundAccents({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    return Stack(
+      clipBehavior: Clip.none,
+      fit: StackFit.expand,
+      children: [
+        Positioned(
+          top: -80,
+          right: -40,
+          child: Container(
+            width: 200,
+            height: 200,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              gradient: LinearGradient(
+                colors: [
+                  colorScheme.primary.withOpacity(0.38),
+                  Color.lerp(colorScheme.primary, kFieldFill, 0.45)!
+                      .withOpacity(0.14),
+                ],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+            ),
+          ),
+        ),
+        Positioned(
+          bottom: -100,
+          left: -40,
+          child: Container(
+            width: 260,
+            height: 260,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              gradient: LinearGradient(
+                colors: [
+                  kFieldBorder.withOpacity(0.35),
+                  colorScheme.primary.withOpacity(0.14),
+                ],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+/// Same orb motif as [SplashBackgroundAccents], scaled and softened for a light
+/// surface (e.g. the login form card) so the shapes read like the splash screen.
+class SplashStylePanelAccents extends StatelessWidget {
+  const SplashStylePanelAccents({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    return Stack(
+      clipBehavior: Clip.none,
+      fit: StackFit.expand,
+      children: [
+        // Top-trailing orb omitted — full-screen [SplashBackgroundAccents] already
+        // covers that corner; avoids doubling on the login card.
+        Positioned(
+          bottom: -72,
+          left: -36,
+          child: Container(
+            width: 200,
+            height: 200,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              gradient: LinearGradient(
+                colors: [
+                  kFieldBorder.withOpacity(0.5),
+                  colorScheme.primary.withOpacity(0.10),
+                ],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
 /// Same wave lines as [OnboardingWaveBackgroundPainter], with a horizontal /
 /// phase shift for smooth looping animation (e.g. login background).
 class AnimatedOnboardingWaveBackgroundPainter extends CustomPainter {

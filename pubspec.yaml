@@ -42,6 +42,7 @@ dependencies:
 dev_dependencies:
   flutter_test:
     sdk: flutter
+  flutter_launcher_icons: ^0.14.4
 
   # The "flutter_lints" package below contains a set of recommended lints to
   # encourage good coding practices. The lint set provided by the package is
@@ -94,3 +95,14 @@ flutter:
   #
   # For details regarding fonts from package dependencies,
   # see https://flutter.dev/to/font-from-package
+
+# Regenerate platform icons from the master PNG:
+#   cd tool && npm install && node generate_launcher_icons.mjs
+# (flutter_launcher_icons config kept for reference; script is source of truth.)
+flutter_launcher_icons:
+  android: true
+  ios: true
+  image_path: assets/images/credittrack_app_icon.png
+  min_sdk_android: 21
+  adaptive_icon_background: "#7C2D12"
+  adaptive_icon_foreground: assets/images/credittrack_app_icon.png

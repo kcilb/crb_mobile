@@ -1,12 +1,55 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Modify this file to customize your launch splash screen -->
 <layer-list xmlns:android="http://schemas.android.com/apk/res/android">
-    <item android:drawable="?android:colorBackground" />
-
-    <!-- You can insert your own image assets here -->
-    <!-- <item>
+    <item>
+        <shape android:shape="rectangle">
+            <solid android:color="@color/launch_bg_soft_start" />
+        </shape>
+    </item>
+    <item
+        android:width="520dp"
+        android:height="680dp"
+        android:gravity="bottom|start"
+        android:left="-200dp"
+        android:bottom="-140dp">
+        <shape android:shape="oval">
+            <solid android:color="@color/launch_orb_primary_soft" />
+        </shape>
+    </item>
+    <item
+        android:width="600dp"
+        android:height="460dp"
+        android:gravity="top|end"
+        android:right="-200dp"
+        android:top="-120dp">
+        <shape android:shape="oval">
+            <solid android:color="@color/launch_orb_peach_soft" />
+        </shape>
+    </item>
+    <item
+        android:width="120dp"
+        android:height="120dp"
+        android:gravity="center"
+        android:bottom="40dp">
         <bitmap
             android:gravity="center"
-            android:src="@mipmap/launch_image" />
-    </item> -->
+            android:src="@drawable/ic_launch_screen_icon" />
+    </item>
+    <item
+        android:width="280dp"
+        android:height="100dp"
+        android:gravity="center"
+        android:top="56dp">
+        <bitmap
+            android:gravity="bottom|center_horizontal"
+            android:src="@drawable/launch_splash_wordmark" />
+    </item>
+    <item
+        android:width="200dp"
+        android:height="36dp"
+        android:gravity="bottom|center_horizontal"
+        android:bottom="36dp">
+        <bitmap
+            android:gravity="center"
+            android:src="@drawable/launch_splash_bottom_dots" />
+    </item>
 </layer-list>
