@@ -321,6 +321,27 @@ class BalanceDialogBackgroundPainter extends CustomPainter {
   bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }
 
+/// Curved bottom edge for the dashboard and notification hero headers.
+class BottomCurveClipper extends CustomClipper<Path> {
+  @override
+  Path getClip(Size size) {
+    final path = Path();
+    path.lineTo(0, size.height - 30);
+    path.quadraticBezierTo(
+      size.width / 2,
+      size.height + 30,
+      size.width,
+      size.height - 30,
+    );
+    path.lineTo(size.width, 0);
+    path.close();
+    return path;
+  }
+
+  @override
+  bool shouldReclip(CustomClipper<Path> oldClipper) => false;
+}
+
 /// Decorative gradient blobs at the bottom of dialog cards.
 /// [phase] in \[0,1\] drives gentle motion on blobs, rings, and dots (loop the animation).
 class BottomAbstractShapesPainter extends CustomPainter {

@@ -18,7 +18,8 @@ class LogoutDialog {
     return showDialog<bool>(
       context: context,
       barrierDismissible: false,
-      barrierColor: Colors.black.withOpacity(0.45),
+      barrierColor:
+          Color.alphaBlend(kThemeBg.withOpacity(0.35), Colors.black.withOpacity(0.5)),
       builder: (ctx) => const _LogoutDialogWidget(),
     );
   }
@@ -63,7 +64,7 @@ class _LogoutDialogWidgetState extends State<_LogoutDialogWidget> {
                 : ConstrainedBox(
                   constraints: const BoxConstraints(maxWidth: 300),
                   child: Material(
-                    color: kThemeBg,
+                    color: Colors.white,
                     surfaceTintColor: Colors.transparent,
                     elevation: 12,
                     shadowColor: Colors.black.withOpacity(0.4),
@@ -93,7 +94,7 @@ class _LogoutDialogWidgetState extends State<_LogoutDialogWidget> {
           style: TextStyle(
             fontSize: 16,
             fontWeight: FontWeight.w700,
-            color: Colors.white,
+            color: kFieldTextColor,
             letterSpacing: -0.2,
           ),
         ),
@@ -105,7 +106,7 @@ class _LogoutDialogWidgetState extends State<_LogoutDialogWidget> {
           style: TextStyle(
             fontSize: 12.5,
             height: 1.35,
-            color: Colors.white.withOpacity(0.82),
+            color: kFieldTextColor.withOpacity(0.82),
           ),
         ),
         const SizedBox(height: 18),
@@ -115,8 +116,8 @@ class _LogoutDialogWidgetState extends State<_LogoutDialogWidget> {
               child: OutlinedButton(
                 onPressed: () => Navigator.of(context).pop(false),
                 style: OutlinedButton.styleFrom(
-                  foregroundColor: Colors.white,
-                  side: BorderSide(color: Colors.white.withOpacity(0.75)),
+                  foregroundColor: kPrimaryBlue,
+                  side: BorderSide(color: kPrimaryBlue.withOpacity(0.85)),
                   padding: const EdgeInsets.symmetric(vertical: 10),
                   minimumSize: const Size(0, 40),
                   shape: RoundedRectangleBorder(
@@ -137,8 +138,8 @@ class _LogoutDialogWidgetState extends State<_LogoutDialogWidget> {
               child: FilledButton(
                 onPressed: _onConfirmLogout,
                 style: FilledButton.styleFrom(
-                  backgroundColor: kFieldFill,
-                  foregroundColor: kThemeBg,
+                  backgroundColor: kPrimaryBlue,
+                  foregroundColor: Colors.white,
                   elevation: 0,
                   padding: const EdgeInsets.symmetric(vertical: 10),
                   minimumSize: const Size(0, 40),
@@ -222,10 +223,10 @@ class _AnimatedLogoutIconBadgeState extends State<_AnimatedLogoutIconBadge>
       child: Container(
         padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
-          color: Colors.white.withOpacity(0.14),
+          color: kPrimaryBlue,
           shape: BoxShape.circle,
           border: Border.all(
-            color: Colors.white.withOpacity(0.38),
+            color: Colors.white.withOpacity(0.30),
           ),
         ),
         child: const Icon(

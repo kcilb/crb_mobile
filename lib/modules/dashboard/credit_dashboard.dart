@@ -56,6 +56,9 @@ class _CreditDashboardState extends State<CreditDashboard>
 
   int _selectedNavIndex = 0;
 
+  /// Shown on the notification icon until the user opens [NotificationScreen].
+  int _notificationBadgeCount = 4;
+
   bool isEligibleForLoan() {
     return creditScore >= 670 && (availableCredit / totalCreditLimit) >= 0.3;
   }
@@ -103,13 +106,37 @@ class _CreditDashboardState extends State<CreditDashboard>
         elevation: 0,
         iconTheme: const IconThemeData(color: Colors.white),
         actions: [
-          IconButton(
-            icon: const Icon(Icons.notifications_outlined),
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => const NotificationScreen(),
+          Builder(
+            builder: (context) {
+              final scheme = Theme.of(context).colorScheme;
+              return Badge(
+                alignment: Alignment.topRight,
+                offset: const Offset(-2, 6),
+                padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
+                isLabelVisible: _notificationBadgeCount > 0,
+                backgroundColor: scheme.onPrimary,
+                label: Text(
+                  _notificationBadgeCount > 9 ? '9+' : '$_notificationBadgeCount',
+                  style: TextStyle(
+                    color: scheme.primary,
+                    fontSize: 10,
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
+                child: IconButton(
+                  icon: const Icon(Icons.notifications_outlined),
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const NotificationScreen(),
+                      ),
+                    ).then((_) {
+                      if (mounted) {
+                        setState(() => _notificationBadgeCount = 0);
+                      }
+                    });
+                  },
                 ),
               );
             },
@@ -568,13 +595,18 @@ class _CreditDashboardState extends State<CreditDashboard>
                 icon: Icons.notifications_active_rounded,
                 label: 'Alerts',
                 tint: const Color(0xFFDC2626),
+                badgeCount: _notificationBadgeCount,
                 onTap: () {
                   Navigator.push(
                     context,
                     MaterialPageRoute(
                       builder: (context) => const NotificationScreen(),
                     ),
-                  );
+                  ).then((_) {
+                    if (mounted) {
+                      setState(() => _notificationBadgeCount = 0);
+                    }
+                  });
                 },
               ),
             ),
@@ -1589,41 +1621,34 @@ class _AnimatedNavItem extends StatelessWidget {
   }
 }
 
-class BottomCurveClipper extends CustomClipper<Path> {
-  @override
-  Path getClip(Size size) {
-    final path = Path();
-    path.lineTo(0, size.height - 30);
-    path.quadraticBezierTo(
-      size.width / 2,
-      size.height + 30,
-      size.width,
-      size.height - 30,
-    );
-    path.lineTo(size.width, 0);
-    path.close();
-    return path;
-  }
-
-  @override
-  bool shouldReclip(CustomClipper<Path> oldClipper) => false;
-}
-
 class _QuickActionTile extends StatelessWidget {
   final IconData icon;
   final String label;
   final Color tint;
   final VoidCallback onTap;
+  final int? badgeCount;
 
   const _QuickActionTile({
     required this.icon,
     required this.label,
     required this.tint,
     required this.onTap,
+    this.badgeCount,
   });
 
   @override
   Widget build(BuildContext context) {
+    final showBadge = badgeCount != null && badgeCount! > 0;
+    final iconCircle = Container(
+      height: 34,
+      width: 34,
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        color: tint.withOpacity(0.14),
+      ),
+      child: Icon(icon, color: tint, size: 18),
+    );
+
     return InkWell(
       borderRadius: BorderRadius.circular(18),
       onTap: onTap,
@@ -1637,14 +1662,28 @@ class _QuickActionTile extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Container(
-              height: 34,
-              width: 34,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: tint.withOpacity(0.14),
-              ),
-              child: Icon(icon, color: tint, size: 18),
+            Builder(
+              builder: (context) {
+                final scheme = Theme.of(context).colorScheme;
+                return Badge(
+                  alignment: Alignment.topRight,
+                  offset: const Offset(-1, 4),
+                  padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
+                  isLabelVisible: showBadge,
+                  backgroundColor: scheme.onPrimary,
+                  label: Text(
+                    showBadge && badgeCount != null
+                        ? (badgeCount! > 9 ? '9+' : '$badgeCount')
+                        : '',
+                    style: TextStyle(
+                      color: scheme.primary,
+                      fontSize: 9,
+                      fontWeight: FontWeight.w800,
+                    ),
+                  ),
+                  child: iconCircle,
+                );
+              },
             ),
             const SizedBox(height: 10),
             Text(

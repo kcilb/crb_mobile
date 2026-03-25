@@ -1,3 +1,5 @@
+import 'dart:ui' show PathOperation;
+
 import 'package:crb_mobile/dialogs/dialog_theme.dart';
 import 'package:crb_mobile/dialogs/otp_dialog.dart';
 import 'package:crb_mobile/widgets/brand_app_icon.dart';
@@ -876,13 +878,17 @@ class _UserAuthState extends State<UserAuth> {
   }
 }
 
-/// Clips a rounded rectangle with a semicircular notch at the bottom center
-/// (for the floating action button that sits half in / half out of the card).
+/// Rounded rect minus a circle at the bottom center. Center is on the bottom
+/// edge so the hole cuts into the card; [holeRadius] should be larger than the
+/// FAB radius so the barrier shows in the ring (same idea as notification detail).
 class _NotchedBottomClip extends CustomClipper<Path> {
-  _NotchedBottomClip({this.cornerRadius = 24, this.notchRadius = 28});
+  const _NotchedBottomClip({
+    required this.cornerRadius,
+    required this.holeRadius,
+  });
 
   final double cornerRadius;
-  final double notchRadius;
+  final double holeRadius;
 
   @override
   Path getClip(Size size) {
@@ -891,15 +897,17 @@ class _NotchedBottomClip extends CustomClipper<Path> {
       Radius.circular(cornerRadius),
     );
     final rectPath = Path()..addRRect(rrect);
-    final notchCenter = Offset(size.width / 2, size.height + notchRadius);
+    final notchCenter = Offset(size.width / 2, size.height);
     final notchPath =
         Path()
-          ..addOval(Rect.fromCircle(center: notchCenter, radius: notchRadius));
+          ..addOval(Rect.fromCircle(center: notchCenter, radius: holeRadius));
     return Path.combine(PathOperation.difference, rectPath, notchPath);
   }
 
   @override
-  bool shouldReclip(covariant CustomClipper<Path> oldDelegate) => false;
+  bool shouldReclip(covariant _NotchedBottomClip oldClipper) =>
+      oldClipper.cornerRadius != cornerRadius ||
+      oldClipper.holeRadius != holeRadius;
 }
 
 /// Professional "Create Account" form inside a dialog.
@@ -1014,36 +1022,52 @@ class _CreateAccountDialogState extends State<_CreateAccountDialog>
   Widget build(BuildContext context) {
     final bottomInset = MediaQuery.of(context).viewInsets.bottom;
 
-    const notchRadius = 28.0;
     const buttonSize = 56.0;
+    const buttonRadius = buttonSize / 2;
+    /// Ring between FAB and card edge; hole = FAB radius + margin (barrier shows through).
+    const holeMargin = 6.0;
+    const holeRadius = buttonRadius + holeMargin;
+    const cornerRadius = 24.0;
+
+    final cardSurface = Color.lerp(kFieldFill, Colors.white, 0.42)!;
+    final cardBorder = Color.lerp(kFieldBorder, kThemeBg, 0.12)!;
 
     return Dialog(
       insetPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
       backgroundColor: Colors.transparent,
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(24),
-        child: Stack(
-          clipBehavior: Clip.none,
-          children: [
-            // White card with notched bottom (semicircular cutout for the button).
-            ClipPath(
-              clipper: _NotchedBottomClip(notchRadius: notchRadius),
+      child: Stack(
+        clipBehavior: Clip.none,
+        alignment: Alignment.topCenter,
+        children: [
+          // Shadow stays outside ClipPath so it is not clipped away.
+          Container(
+            constraints: const BoxConstraints(maxWidth: 520),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(cornerRadius),
+              boxShadow: [
+                BoxShadow(
+                  color: kThemeBg.withOpacity(0.18),
+                  blurRadius: 28,
+                  offset: const Offset(0, 14),
+                  spreadRadius: -6,
+                ),
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.08),
+                  blurRadius: 12,
+                  offset: const Offset(0, 4),
+                ),
+              ],
+            ),
+            child: ClipPath(
+              clipper: const _NotchedBottomClip(
+                cornerRadius: cornerRadius,
+                holeRadius: holeRadius,
+              ),
               child: Container(
                 decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(24),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.20),
-                      blurRadius: 30,
-                      offset: const Offset(0, 12),
-                    ),
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.08),
-                      blurRadius: 10,
-                      offset: const Offset(0, 4),
-                    ),
-                  ],
+                  color: cardSurface,
+                  borderRadius: BorderRadius.circular(cornerRadius),
+                  border: Border.all(color: cardBorder, width: 1),
                 ),
                 child: Stack(
                   clipBehavior: Clip.none,
@@ -1079,7 +1103,7 @@ class _CreateAccountDialogState extends State<_CreateAccountDialog>
                               20,
                               20,
                               20,
-                              20 + notchRadius + bottomInset,
+                              20 + holeRadius + bottomInset,
                             ),
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -1400,53 +1424,76 @@ class _CreateAccountDialogState extends State<_CreateAccountDialog>
                 ),
               ),
             ),
-            // Floating circular action button in the notch (half in / half out of card).
-            Positioned(
-              left: 0,
-              right: 0,
-              bottom: -notchRadius,
-              height: buttonSize,
-              child: Center(
-                child: Material(
-                  elevation: 8,
-                  shadowColor: Colors.black.withOpacity(0.25),
-                  shape: const CircleBorder(),
-                  color:
-                      (_createStepIndex == 0 && _detailsComplete) ||
-                              (_createStepIndex == 1 && _passwordStepComplete)
-                          ? kPrimaryBlue
-                          : Colors.grey.shade400,
-                  child: InkWell(
-                    customBorder: const CircleBorder(),
-                    onTap: () {
-                      if (_createStepIndex == 0 && _detailsComplete) {
-                        setState(() => _createStepIndex = 1);
-                        WidgetsBinding.instance.addPostFrameCallback((_) {
-                          _passwordFocus.requestFocus();
-                        });
-                      } else if (_createStepIndex == 1 &&
-                          _passwordStepComplete) {
-                        final overlayContext = Overlay.of(context).context;
-                        Navigator.of(context).pop();
-                        OtpDialog.show(overlayContext);
-                      }
-                    },
-                    child: SizedBox(
-                      width: buttonSize,
-                      height: buttonSize,
-                      child: Icon(
-                        Icons.arrow_forward_rounded,
-                        color: Colors.white,
-                        size: 26,
-                      ),
+          ),
+          // Floating FAB: center on bottom card edge; hole is larger so barrier shows in ring.
+          Positioned(
+            left: 0,
+            right: 0,
+            bottom: -buttonRadius,
+            height: buttonSize,
+            child: Center(
+              child: Material(
+                color: Colors.transparent,
+                child: InkWell(
+                  customBorder: const CircleBorder(),
+                  onTap: () {
+                    final enabled =
+                        (_createStepIndex == 0 && _detailsComplete) ||
+                        (_createStepIndex == 1 && _passwordStepComplete);
+                    if (!enabled) return;
+                    if (_createStepIndex == 0) {
+                      setState(() => _createStepIndex = 1);
+                      WidgetsBinding.instance.addPostFrameCallback((_) {
+                        _passwordFocus.requestFocus();
+                      });
+                    } else if (_createStepIndex == 1) {
+                      final overlayContext = Overlay.of(context).context;
+                      Navigator.of(context).pop();
+                      OtpDialog.show(overlayContext);
+                    }
+                  },
+                  child: Container(
+                    width: buttonSize,
+                    height: buttonSize,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color:
+                          (_createStepIndex == 0 && _detailsComplete) ||
+                                  (_createStepIndex == 1 && _passwordStepComplete)
+                              ? kPrimaryBlue
+                              : Color.lerp(
+                                  Colors.grey.shade400,
+                                  kFieldFill,
+                                  0.35,
+                                )!,
+                      boxShadow: [
+                        if ((_createStepIndex == 0 && _detailsComplete) ||
+                            (_createStepIndex == 1 && _passwordStepComplete))
+                          BoxShadow(
+                            color: kPrimaryBlue.withOpacity(0.38),
+                            blurRadius: 14,
+                            offset: const Offset(0, 5),
+                          ),
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.10),
+                          blurRadius: 10,
+                          offset: const Offset(0, 3),
+                        ),
+                      ],
+                    ),
+                    alignment: Alignment.center,
+                    child: Icon(
+                      Icons.arrow_forward_rounded,
+                      color: Colors.white,
+                      size: 26,
                     ),
                   ),
                 ),
               ),
             ),
+          ),
           ],
         ),
-      ),
     );
   }
 }
