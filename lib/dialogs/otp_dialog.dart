@@ -402,7 +402,7 @@ class OtpDialog extends StatefulWidget {
   }) {
     return showDialog<void>(
       context: context,
-      barrierDismissible: true,
+      barrierDismissible: false,
       builder:
           (_) => OtpDialog(
             title: title,
@@ -422,6 +422,7 @@ class _OtpDialogState extends State<OtpDialog> with SingleTickerProviderStateMix
   static const double _minBoxSize = 36;
   static const double _maxBoxSize = 48;
   static const double _gap = 8;
+  static const Duration _codeExpiryDuration = Duration(minutes: 2);
 
   late final AnimationController _envelopeIconController;
   late final Animation<double> _envelopePulse;
@@ -436,6 +437,9 @@ class _OtpDialogState extends State<OtpDialog> with SingleTickerProviderStateMix
   );
 
   bool _verificationTriggered = false;
+  bool _resending = false;
+  late Duration _timeRemaining;
+  Timer? _expiryTimer;
 
   String get _otpCode => _digitControllers.map((c) => c.text).join();
 
@@ -451,8 +455,20 @@ class _OtpDialogState extends State<OtpDialog> with SingleTickerProviderStateMix
     return !_otpCode.contains(RegExp(r'[^0-9]'));
   }
 
+  bool get _isExpired => _timeRemaining <= Duration.zero;
+
+  String get _expiryLabel {
+    final total = _timeRemaining.inSeconds.clamp(0, _codeExpiryDuration.inSeconds);
+    final minutes = total ~/ 60;
+    final seconds = total % 60;
+    final mm = minutes.toString().padLeft(2, '0');
+    final ss = seconds.toString().padLeft(2, '0');
+    return '$mm:$ss';
+  }
+
   void _onOtpChanged() {
     if (!mounted || _verificationTriggered) return;
+    if (_isExpired) return;
     if (!_otpComplete) return;
     _verificationTriggered = true;
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -460,9 +476,55 @@ class _OtpDialogState extends State<OtpDialog> with SingleTickerProviderStateMix
     });
   }
 
+  void _startExpiryTimer() {
+    _expiryTimer?.cancel();
+    _timeRemaining = _codeExpiryDuration;
+    _expiryTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
+      if (!mounted) {
+        timer.cancel();
+        return;
+      }
+      if (_timeRemaining <= const Duration(seconds: 1)) {
+        setState(() => _timeRemaining = Duration.zero);
+        timer.cancel();
+        return;
+      }
+      setState(() => _timeRemaining -= const Duration(seconds: 1));
+    });
+  }
+
+  void _clearOtpFields() {
+    setState(() {
+      _verificationTriggered = false;
+      for (final c in _digitControllers) {
+        c.text = '';
+      }
+    });
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) _digitFocusNodes.first.requestFocus();
+    });
+  }
+
+  Future<void> _onResendTap() async {
+    if (_resending) return;
+    setState(() => _resending = true);
+    widget.onResend?.call();
+    _clearOtpFields();
+    _startExpiryTimer();
+    if (!mounted) return;
+    ScaffoldMessenger.maybeOf(context)?.showSnackBar(
+      const SnackBar(
+        content: Text('Verification code resent'),
+        duration: Duration(milliseconds: 1400),
+      ),
+    );
+    setState(() => _resending = false);
+  }
+
   @override
   void initState() {
     super.initState();
+    _timeRemaining = _codeExpiryDuration;
     _envelopeIconController = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 1800),
@@ -478,10 +540,12 @@ class _OtpDialogState extends State<OtpDialog> with SingleTickerProviderStateMix
     for (final c in _digitControllers) {
       c.addListener(_onOtpChanged);
     }
+    _startExpiryTimer();
   }
 
   @override
   void dispose() {
+    _expiryTimer?.cancel();
     _envelopeIconController.dispose();
     for (final c in _digitControllers) {
       c.removeListener(_onOtpChanged);
@@ -703,6 +767,19 @@ class _OtpDialogState extends State<OtpDialog> with SingleTickerProviderStateMix
                               ),
                             ),
                             const SizedBox(height: 14),
+                            Text(
+                              _isExpired
+                                  ? 'Code expired'
+                                  : 'Code expires in $_expiryLabel',
+                              style: TextStyle(
+                                fontSize: 11.5,
+                                fontWeight: FontWeight.w600,
+                                color: _isExpired
+                                    ? const Color(0xFFFCA5A5)
+                                    : Colors.white.withOpacity(0.9),
+                              ),
+                            ),
+                            const SizedBox(height: 8),
                             Center(child: _buildResendRow()),
                           ],
                         ),
@@ -769,27 +846,37 @@ class _OtpDialogState extends State<OtpDialog> with SingleTickerProviderStateMix
   }
 
   Widget _buildResendRow() {
-    return GestureDetector(
-      onTap: widget.onResend,
-      child: RichText(
-        textAlign: TextAlign.center,
-        text: TextSpan(
-          style: const TextStyle(
-            fontSize: 12,
-            color: Colors.white,
-            height: 1.35,
-          ),
-          children: [
-            const TextSpan(text: "Didn't receive the code? "),
-            TextSpan(
-              text: 'Resend code',
-              style: TextStyle(
-                fontWeight: FontWeight.w700,
-                color: Colors.white,
-                decoration: TextDecoration.underline,
-              ),
+    return InkWell(
+      onTap: _resending ? null : _onResendTap,
+      borderRadius: BorderRadius.circular(8),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+        child: RichText(
+          textAlign: TextAlign.center,
+          text: TextSpan(
+            style: const TextStyle(
+              fontSize: 12,
+              color: Colors.white,
+              height: 1.35,
             ),
-          ],
+            children: [
+              TextSpan(
+                text: _isExpired
+                    ? 'Your code has expired. '
+                    : "Didn't receive the code? ",
+              ),
+              TextSpan(
+                text: _resending ? 'Resending…' : 'Resend code',
+                style: TextStyle(
+                  fontWeight: FontWeight.w700,
+                  color: Colors.white,
+                  decoration: _resending
+                      ? TextDecoration.none
+                      : TextDecoration.underline,
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );

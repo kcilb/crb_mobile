@@ -542,7 +542,7 @@ class _UserAuthState extends State<UserAuth> {
                                       onTap: () {
                                         showDialog<void>(
                                           context: context,
-                                          barrierDismissible: true,
+                                          barrierDismissible: false,
                                           builder: (ctx) {
                                             return const _CreateAccountDialog();
                                           },
@@ -801,7 +801,7 @@ class _UserAuthState extends State<UserAuth> {
                                           onPressed: () {
                                             showDialog<void>(
                                               context: context,
-                                              barrierDismissible: true,
+                                              barrierDismissible: false,
                                               builder: (ctx) {
                                                 return const _CreateAccountDialog();
                                               },
@@ -935,6 +935,7 @@ class _CreateAccountDialogState extends State<_CreateAccountDialog>
   bool _agreeToTerms = false;
   bool _obscurePassword = true;
   bool _obscureConfirmPassword = true;
+  bool _nextTapLoading = false;
   int _createStepIndex = 0;
 
   final TextEditingController _nameController = TextEditingController();
@@ -954,6 +955,35 @@ class _CreateAccountDialogState extends State<_CreateAccountDialog>
       _passwordController.text.trim() == _confirmController.text.trim();
 
   bool get _passwordStepComplete => _passwordsComplete && _passwordsMatch;
+
+  static const Duration _nextTapDelay = Duration(milliseconds: 950);
+
+  Future<void> _onCreateNextTap() async {
+    final enabled =
+        (_createStepIndex == 0 && _detailsComplete) ||
+        (_createStepIndex == 1 && _passwordStepComplete);
+    if (!enabled || _nextTapLoading) return;
+
+    setState(() => _nextTapLoading = true);
+    await Future<void>.delayed(_nextTapDelay);
+    if (!mounted) return;
+
+    if (_createStepIndex == 0) {
+      setState(() {
+        _createStepIndex = 1;
+        _nextTapLoading = false;
+      });
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) _passwordFocus.requestFocus();
+      });
+      return;
+    }
+
+    setState(() => _nextTapLoading = false);
+    final overlayContext = Overlay.of(context).context;
+    Navigator.of(context).pop();
+    OtpDialog.show(overlayContext);
+  }
 
   @override
   void initState() {
@@ -1021,6 +1051,10 @@ class _CreateAccountDialogState extends State<_CreateAccountDialog>
   @override
   Widget build(BuildContext context) {
     final bottomInset = MediaQuery.of(context).viewInsets.bottom;
+    final canProceed =
+        !_nextTapLoading &&
+        ((_createStepIndex == 0 && _detailsComplete) ||
+            (_createStepIndex == 1 && _passwordStepComplete));
 
     const buttonSize = 56.0;
     const buttonRadius = buttonSize / 2;
@@ -1109,6 +1143,24 @@ class _CreateAccountDialogState extends State<_CreateAccountDialog>
                               crossAxisAlignment: CrossAxisAlignment.stretch,
                               children: [
                                 // Dialog title/subtitle (standalone dialog styling).
+                                Align(
+                                  alignment: Alignment.centerRight,
+                                  child: Material(
+                                    color: Colors.transparent,
+                                    child: InkWell(
+                                      onTap: () => Navigator.of(context).pop(),
+                                      borderRadius: BorderRadius.circular(20),
+                                      child: Padding(
+                                        padding: const EdgeInsets.all(6),
+                                        child: Icon(
+                                          Icons.close_rounded,
+                                          color: kFieldTextColor.withOpacity(0.42),
+                                          size: 22,
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ),
                                 Center(
                                   child: const Text(
                                     'Create Account',
@@ -1436,39 +1488,21 @@ class _CreateAccountDialogState extends State<_CreateAccountDialog>
                 color: Colors.transparent,
                 child: InkWell(
                   customBorder: const CircleBorder(),
-                  onTap: () {
-                    final enabled =
-                        (_createStepIndex == 0 && _detailsComplete) ||
-                        (_createStepIndex == 1 && _passwordStepComplete);
-                    if (!enabled) return;
-                    if (_createStepIndex == 0) {
-                      setState(() => _createStepIndex = 1);
-                      WidgetsBinding.instance.addPostFrameCallback((_) {
-                        _passwordFocus.requestFocus();
-                      });
-                    } else if (_createStepIndex == 1) {
-                      final overlayContext = Overlay.of(context).context;
-                      Navigator.of(context).pop();
-                      OtpDialog.show(overlayContext);
-                    }
-                  },
+                  onTap: _onCreateNextTap,
                   child: Container(
                     width: buttonSize,
                     height: buttonSize,
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
-                      color:
-                          (_createStepIndex == 0 && _detailsComplete) ||
-                                  (_createStepIndex == 1 && _passwordStepComplete)
-                              ? kPrimaryBlue
-                              : Color.lerp(
-                                  Colors.grey.shade400,
-                                  kFieldFill,
-                                  0.35,
-                                )!,
+                      color: canProceed
+                          ? kPrimaryBlue
+                          : Color.lerp(
+                              Colors.grey.shade400,
+                              kFieldFill,
+                              0.35,
+                            )!,
                       boxShadow: [
-                        if ((_createStepIndex == 0 && _detailsComplete) ||
-                            (_createStepIndex == 1 && _passwordStepComplete))
+                        if (canProceed)
                           BoxShadow(
                             color: kPrimaryBlue.withOpacity(0.38),
                             blurRadius: 14,
@@ -1482,11 +1516,21 @@ class _CreateAccountDialogState extends State<_CreateAccountDialog>
                       ],
                     ),
                     alignment: Alignment.center,
-                    child: Icon(
-                      Icons.arrow_forward_rounded,
-                      color: Colors.white,
-                      size: 26,
-                    ),
+                    child: _nextTapLoading
+                        ? const SizedBox(
+                            width: 22,
+                            height: 22,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2.5,
+                              valueColor:
+                                  AlwaysStoppedAnimation<Color>(Colors.white),
+                            ),
+                          )
+                        : const Icon(
+                            Icons.arrow_forward_rounded,
+                            color: Colors.white,
+                            size: 26,
+                          ),
                   ),
                 ),
               ),
